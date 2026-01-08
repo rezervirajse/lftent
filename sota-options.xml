@@ -167,8 +167,8 @@
 					<AbsDimension x="60" y="23" />
 				</Size>
 				<Anchors>
-					<Anchor point="LEFT" relativeTo="$parentConfigTabButton2" relativePoint="RIGHT">
-						<Offset x="4" y="0" />
+					<Anchor point="TOPLEFT" relativeTo="$parentConfigTabButton2" relativePoint="RIGHT">
+						<Offset x="100" y="-54" />
 					</Anchor>
 				</Anchors>
 				<Scripts>
