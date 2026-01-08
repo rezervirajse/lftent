@@ -695,43 +695,45 @@
 
 		<!-- Configuration Frame 1.4: Rules -->
 		<Frame name="FrameConfigRules" parent="UIParent" toplevel="true" hidden="true" inherits="SOTA_ConfigurationFrameTemplate">
-			<Frames>
-				<FontString name="$parentRaidTiersTitle" inherits="GameFontNormal" text="Raid tiers">
-					<Anchors>
-						<Anchor point="TOPLEFT">
-							<Offset x="32" y="-110"/>
-						</Anchor>
-					</Anchors>
-				</FontString>
-				<FontString name="$parentRaidTiersText" inherits="GameFontHighlightSmall" justifyH="LEFT">
-					<Size>
-						<AbsDimension x="320" y="48"/>
-					</Size>
-					<Anchors>
-						<Anchor point="TOPLEFT" relativeTo="$parentRaidTiersTitle" relativePoint="BOTTOMLEFT">
-							<Offset x="0" y="-8"/>
-						</Anchor>
-					</Anchors>
-				</FontString>
+			<Layers>
+				<Layer level="ARTWORK">
+					<FontString name="$parentRaidTiersTitle" inherits="GameFontNormal" text="Raid tiers">
+						<Anchors>
+							<Anchor point="TOPLEFT">
+								<Offset x="32" y="-110"/>
+							</Anchor>
+						</Anchors>
+					</FontString>
+					<FontString name="$parentRaidTiersText" inherits="GameFontHighlightSmall" justifyH="LEFT">
+						<Size>
+							<AbsDimension x="320" y="48"/>
+						</Size>
+						<Anchors>
+							<Anchor point="TOPLEFT" relativeTo="$parentRaidTiersTitle" relativePoint="BOTTOMLEFT">
+								<Offset x="0" y="-8"/>
+							</Anchor>
+						</Anchors>
+					</FontString>
 
-				<FontString name="$parentGainTableTitle" inherits="GameFontNormal" text="Gain table">
-					<Anchors>
-						<Anchor point="TOPLEFT" relativeTo="$parentRaidTiersText" relativePoint="BOTTOMLEFT">
-							<Offset x="0" y="-24"/>
-						</Anchor>
-					</Anchors>
-				</FontString>
-				<FontString name="$parentGainTableText" inherits="GameFontHighlightSmall" justifyH="LEFT">
-					<Size>
-						<AbsDimension x="320" y="140"/>
-					</Size>
-					<Anchors>
-						<Anchor point="TOPLEFT" relativeTo="$parentGainTableTitle" relativePoint="BOTTOMLEFT">
-							<Offset x="0" y="-8"/>
-						</Anchor>
-					</Anchors>
-				</FontString>
-			</Frames>
+					<FontString name="$parentGainTableTitle" inherits="GameFontNormal" text="Gain table">
+						<Anchors>
+							<Anchor point="TOPLEFT" relativeTo="$parentRaidTiersText" relativePoint="BOTTOMLEFT">
+								<Offset x="0" y="-24"/>
+							</Anchor>
+						</Anchors>
+					</FontString>
+					<FontString name="$parentGainTableText" inherits="GameFontHighlightSmall" justifyH="LEFT">
+						<Size>
+							<AbsDimension x="320" y="140"/>
+						</Size>
+						<Anchors>
+							<Anchor point="TOPLEFT" relativeTo="$parentGainTableTitle" relativePoint="BOTTOMLEFT">
+								<Offset x="0" y="-8"/>
+							</Anchor>
+						</Anchors>
+					</FontString>
+				</Layer>
+			</Layers>
 		</Frame>
 
 		<!-- Configuration Frame 2.1: Messages -->
