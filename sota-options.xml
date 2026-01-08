@@ -170,7 +170,7 @@
 				</Size>
 				<Anchors>
 					<Anchor point="TOPLEFT">
-						<Offset x="100" y="-54" />
+						<Offset x="160" y="-54" />
 					</Anchor>
 				</Anchors>
 				<Scripts>
@@ -694,7 +694,7 @@
 		</Frame>
 
 		<!-- Configuration Frame 1.4: Rules -->
-		<Frame name="FrameConfigRules" parent="UIParent" inherits="SOTA_ConfigurationFrameTemplate">
+		<Frame name="FrameConfigRules" parent="UIParent" toplevel="true" hidden="true" inherits="SOTA_ConfigurationFrameTemplate">
 			<Frames>
 				<FontString name="$parentRaidTiersTitle" inherits="GameFontNormal" text="Raid tiers">
 					<Anchors>

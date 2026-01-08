@@ -98,7 +98,7 @@ function SOTA_UpdateFramePos(frame)
 	if(framename ~= "FrameConfigMiscDkp") then
 		FrameConfigMiscDkp:SetAllPoints(frame);
 	end
-	if(framename ~= "FrameConfigRules") then
+	if FrameConfigRules and (framename ~= "FrameConfigRules") then
 		FrameConfigRules:SetAllPoints(frame);
 	end
 	if(framename ~= "FrameConfigMessage") then
@@ -129,7 +129,9 @@ function SOTA_CloseAllConfig()
 	FrameConfigBidding:Hide();
 	FrameConfigBossDkp:Hide();
 	FrameConfigMiscDkp:Hide();
-	FrameConfigRules:Hide();
+	if FrameConfigRules then
+		FrameConfigRules:Hide();
+	end
 	FrameConfigMessage:Hide();
 	FrameConfigBidRules:Hide();
 	FrameConfigSyncCfg:Hide();
@@ -198,7 +200,10 @@ function SOTA_RefreshRulesConfig()
 	end
 
 	local raidText = string.format("T1: %s\nT2: %s", t1Text, t2Text);
-	getglobal("FrameConfigRulesRaidTiersText"):SetText(raidText);
+	local raidTextFrame = getglobal("FrameConfigRulesRaidTiersText");
+	if raidTextFrame then
+		raidTextFrame:SetText(raidText);
+	end
 
 	local gainLines = { "Range -> Gain" };
 	for n=1, table.getn(gainTable), 1 do
@@ -207,7 +212,10 @@ function SOTA_RefreshRulesConfig()
 			gainLines[table.getn(gainLines) + 1] = string.format("%d-%d : %d", row.min, row.max, row.gain);
 		end
 	end
-	getglobal("FrameConfigRulesGainTableText"):SetText(table.concat(gainLines, "\n"));
+	local gainTableFrame = getglobal("FrameConfigRulesGainTableText");
+	if gainTableFrame then
+		gainTableFrame:SetText(table.concat(gainLines, "\n"));
+	end
 end
 
 function SOTA_OpenBidRulesConfig()
