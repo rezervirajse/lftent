@@ -161,6 +161,22 @@
 					</OnClick>
 				</Scripts>
 			</Button>
+			<!-- Line 1, button 4: Rules config button -->
+			<Button name="$parentConfigTabButton3" inherits="UIPanelButtonTemplate" text="Rules">
+				<Size>
+					<AbsDimension x="60" y="23" />
+				</Size>
+				<Anchors>
+					<Anchor point="LEFT" relativeTo="$parentConfigTabButton2" relativePoint="RIGHT">
+						<Offset x="4" y="0" />
+					</Anchor>
+				</Anchors>
+				<Scripts>
+					<OnClick>
+						SOTA_OpenRulesConfig();
+					</OnClick>
+				</Scripts>
+			</Button>
 
 			<!-- Line 2, button 1: Messages config button -->
 			<Button name="$parentConfigTabButton4" inherits="UIPanelButtonTemplate" text="Messages">
@@ -673,9 +689,50 @@
 				</Scripts>
 			</Slider>
 		</Frames>
-	</Frame>
+		</Frame>
 
-	<!-- Configuration Frame 2.1: Messages -->
+		<!-- Configuration Frame 1.4: Rules -->
+		<Frame name="FrameConfigRules" parent="UIParent" inherits="SOTA_ConfigurationFrameTemplate">
+			<Frames>
+				<FontString name="$parentRaidTiersTitle" inherits="GameFontNormal" text="Raid tiers">
+					<Anchors>
+						<Anchor point="TOPLEFT">
+							<Offset x="32" y="-110"/>
+						</Anchor>
+					</Anchors>
+				</FontString>
+				<FontString name="$parentRaidTiersText" inherits="GameFontHighlightSmall" justifyH="LEFT">
+					<Size>
+						<AbsDimension x="320" y="48"/>
+					</Size>
+					<Anchors>
+						<Anchor point="TOPLEFT" relativeTo="$parentRaidTiersTitle" relativePoint="BOTTOMLEFT">
+							<Offset x="0" y="-8"/>
+						</Anchor>
+					</Anchors>
+				</FontString>
+
+				<FontString name="$parentGainTableTitle" inherits="GameFontNormal" text="Gain table">
+					<Anchors>
+						<Anchor point="TOPLEFT" relativeTo="$parentRaidTiersText" relativePoint="BOTTOMLEFT">
+							<Offset x="0" y="-24"/>
+						</Anchor>
+					</Anchors>
+				</FontString>
+				<FontString name="$parentGainTableText" inherits="GameFontHighlightSmall" justifyH="LEFT">
+					<Size>
+						<AbsDimension x="320" y="140"/>
+					</Size>
+					<Anchors>
+						<Anchor point="TOPLEFT" relativeTo="$parentGainTableTitle" relativePoint="BOTTOMLEFT">
+							<Offset x="0" y="-8"/>
+						</Anchor>
+					</Anchors>
+				</FontString>
+			</Frames>
+		</Frame>
+
+		<!-- Configuration Frame 2.1: Messages -->
 	<!-- Configurable messages -->
 	<Frame name="FrameConfigMessage" parent="UIParent" toplevel="true" hidden="true" inherits="SOTA_ConfigurationFrameTemplate">
 		<Frames>

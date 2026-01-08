@@ -98,6 +98,9 @@ function SOTA_UpdateFramePos(frame)
 	if(framename ~= "FrameConfigMiscDkp") then
 		FrameConfigMiscDkp:SetAllPoints(frame);
 	end
+	if(framename ~= "FrameConfigRules") then
+		FrameConfigRules:SetAllPoints(frame);
+	end
 	if(framename ~= "FrameConfigMessage") then
 		FrameConfigMessage:SetAllPoints(frame);
 	end
@@ -126,6 +129,7 @@ function SOTA_CloseAllConfig()
 	FrameConfigBidding:Hide();
 	FrameConfigBossDkp:Hide();
 	FrameConfigMiscDkp:Hide();
+	FrameConfigRules:Hide();
 	FrameConfigMessage:Hide();
 	FrameConfigBidRules:Hide();
 	FrameConfigSyncCfg:Hide();
@@ -158,9 +162,52 @@ function SOTA_OpenMiscDkpConfig()
 	FrameConfigMiscDkp:Show();
 end
 
+function SOTA_OpenRulesConfig()
+	SOTA_CloseAllConfig();
+	SOTA_RefreshRulesConfig();
+	FrameConfigRules:Show();
+end
+
 function SOTA_OpenMessageConfig()
 	SOTA_CloseAllConfig();
 	FrameConfigMessage:Show();
+end
+
+function SOTA_RefreshRulesConfig()
+	local tiers = {};
+	local gainTable = {};
+
+	if SOTA_RULES then
+		if SOTA_RULES.raid_tiers then
+			tiers = SOTA_RULES.raid_tiers;
+		end
+		if SOTA_RULES.gain_table then
+			gainTable = SOTA_RULES.gain_table;
+		end
+	end
+
+	local t1 = tiers.T1 or {};
+	local t2 = tiers.T2 or {};
+	local t1Text = "(none)";
+	local t2Text = "(none)";
+	if table.getn(t1) > 0 then
+		t1Text = table.concat(t1, ", ");
+	end
+	if table.getn(t2) > 0 then
+		t2Text = table.concat(t2, ", ");
+	end
+
+	local raidText = string.format("T1: %s\nT2: %s", t1Text, t2Text);
+	getglobal("FrameConfigRulesRaidTiersText"):SetText(raidText);
+
+	local gainLines = { "Range -> Gain" };
+	for n=1, table.getn(gainTable), 1 do
+		local row = gainTable[n];
+		if row and row.min and row.max and row.gain then
+			gainLines[table.getn(gainLines) + 1] = string.format("%d-%d : %d", row.min, row.max, row.gain);
+		end
+	end
+	getglobal("FrameConfigRulesGainTableText"):SetText(table.concat(gainLines, "\n"));
 end
 
 function SOTA_OpenBidRulesConfig()
@@ -669,4 +716,3 @@ function SOTA_InitializeTextElements()
 		entry:SetPoint("TOP", "$parentEntry"..(n-1), "BOTTOM");
 	end
 end
-
