@@ -146,7 +146,7 @@
 				</Scripts>
 			</Button>
 			<!-- Line 1, button 3: Misc DKP config button -->
-			<Button name="$parentConfigTabButton2" inherits="UIPanelButtonTemplate" text="Misc DKP">
+			<Button name="$parentConfigTabButton2" inherits="UIPanelButtonTemplate" text="Misc DKP2">
 				<Size>
 					<AbsDimension x="80" y="23" />
 				</Size>
