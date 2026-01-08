@@ -161,13 +161,15 @@
 					</OnClick>
 				</Scripts>
 			</Button>
-			<!-- Line 1, button 4: Rules config button -->
+
+
+			<!-- Line 2, button 2: Rules config button -->
 			<Button name="$parentConfigTabButton3" inherits="UIPanelButtonTemplate" text="Rules">
 				<Size>
 					<AbsDimension x="60" y="23" />
 				</Size>
 				<Anchors>
-					<Anchor point="TOPLEFT" relativeTo="$parentConfigTabButton2" relativePoint="RIGHT">
+					<Anchor point="TOPLEFT">
 						<Offset x="100" y="-54" />
 					</Anchor>
 				</Anchors>
