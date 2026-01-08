@@ -36,10 +36,10 @@ local MAX_CLASS_DKP_WHISPERED	= 5;
 -- true if a DKP job is already running
 local JobIsRunning				= false
 
--- Guild Roster: table of guild players:	{ Name, DKP, Class, Rank(text), Online, Zone, Rank(value) }
+-- Guild Roster: table of guild players:	{ Name, DKP, Class, Rank(text), Online, Zone, Rank(value), T1, T2 }
 local GuildRosterTable			= { }
 
--- Raid Roster: table of raid players:		{ Name, DKP, Class, Rank, Online }
+-- Raid Roster: table of raid players:		{ Name, DKP, Class, Rank, Online, ..., T1, T2 }
 local RaidRosterTable			= { }
 local RaidRosterLazyUpdate		= false;
 
@@ -475,10 +475,12 @@ function SOTA_RefreshGuildRoster()
 		if not dkp or not tonumber(dkp) then
 			dkp = 0;
 		end
+
+		local t1, t2 = SOTA_ParseTierPoints(note);
 		
 		--echo(string.format("Added %s (%s)", name, online));
 		
-		NewGuildRosterTable[n] = { name, (1 * dkp), class, rank, online, zone, rankIndex };
+		NewGuildRosterTable[n] = { name, (1 * dkp), class, rank, online, zone, rankIndex, t1, t2 };
 	end
 	
 	GuildRosterTable = NewGuildRosterTable;
@@ -1478,18 +1480,13 @@ function SOTA_UpdateLocalDKP(receiver, dkpAdded)
 		local player = raidRoster[n];
 		local name = player[1];
 		local dkp = player[2];
-		local class = player[3];
-		local rank = player[4];
-		local online = player[5];
 
 		if receiver == name then
 			if dkp then
-				dkp = dkp + dkpAdded;
+				raidRoster[n][2] = dkp + dkpAdded;
 			else
-				dkp = dkpAdded;
+				raidRoster[n][2] = dkpAdded;
 			end
-			
-			raidRoster[n] = {name, dkp, class, rank, online};
 			return;
 		end
 	end
@@ -1518,6 +1515,95 @@ function SOTA_CreateDkpString(dkp)
 	end
 	
 	return result;
+end
+
+function SOTA_ParseTierPoints(note)
+	if not note then
+		return 0, 0;
+	end
+
+	local _, _, t1, t2 = string.find(note, "%[(%d+):(%d+)%]");
+	if not t1 or not t2 then
+		return 0, 0;
+	end
+
+	return (1 * t1), (1 * t2);
+end
+
+function SOTA_CreateTierPointsString(t1, t2)
+	if not t1 or not tonumber(t1) then
+		t1 = 0;
+	end
+	if not t2 or not tonumber(t2) then
+		t2 = 0;
+	end
+
+	return string.format("[%d:%d]", t1, t2);
+end
+
+function SOTA_UpdateTierPointsInNote(note, t1, t2)
+	if not note then
+		note = "";
+	end
+
+	local tierString = SOTA_CreateTierPointsString(t1, t2);
+	if string.find(note, "%[%d+:%d+%]") then
+		note = string.gsub(note, "%[%d+:%d+%]", tierString, 1);
+	else
+		note = note .. tierString;
+	end
+
+	return note;
+end
+
+function SOTA_GetTierPoints(playername)
+	local playerInfo = SOTA_GetGuildPlayerInfo(playername);
+	if playerInfo then
+		return (playerInfo[8] or 0), (playerInfo[9] or 0);
+	end
+	return 0, 0;
+end
+
+function SOTA_ApplyTierPoints(playername, t1, t2, silentmode)
+	playername = SOTA_UCFirst(playername);
+
+	local memberCount = GetNumGuildMembers();
+	for n=1,memberCount,1 do
+		name, _, _, _, _, _, publicNote, officerNote = GetGuildRosterInfo(n);
+		if name == playername then
+			local note = officerNote;
+			if SOTA_CONFIG_UseGuildNotes == 1 then
+				note = publicNote;
+			end
+
+			note = SOTA_UpdateTierPointsInNote(note, t1, t2);
+
+			if SOTA_CONFIG_UseGuildNotes == 1 then
+				GuildRosterSetPublicNote(n, note);
+			else
+				GuildRosterSetOfficerNote(n, note);
+			end
+
+			SOTA_UpdateLocalTierPoints(name, t1, t2);
+			return true;
+		end
+	end
+
+	if not silentmode then
+		localEcho(string.format("%s was not found in the guild; tier points were not updated.", playername));
+	end
+	return false;
+end
+
+function SOTA_UpdateLocalTierPoints(playername, t1, t2)
+	local raidRoster = SOTA_GetRaidRoster();
+	for n=1, table.getn(raidRoster),1 do
+		if raidRoster[n][1] == playername then
+			raidRoster[n][8] = t1;
+			raidRoster[n][9] = t2;
+			return;
+		end
+	end
 end
 
 function SOTA_ToggleIncludePlayerInTransaction(playername)
