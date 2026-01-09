@@ -238,3 +238,48 @@ function SOTA_ApplyTierImport()
 	localEcho(string.format("Tier import done. Updated: %d, Missing: %d", updated, missing));
 	return true;
 end
+
+-- Backup public/officer notes to SavedVariables.
+-- Run: /script SOTA_BackupGuildNotes()
+if not SOTA_NOTES_BACKUP then
+	SOTA_NOTES_BACKUP = {};
+end
+
+function SOTA_BackupGuildNotes()
+	local memberCount = GetNumGuildMembers();
+	if memberCount == 0 then
+		localEcho("No guild members found. Open the guild roster and try again.");
+		return false;
+	end
+
+	if not GetGuildRosterShowOffline() == 1 then
+		localEcho("Enable 'Show Offline Members' in the guild roster for a full backup.");
+	end
+
+	local canViewOfficer = CanViewOfficerNote();
+	local snapshot = {
+		timestamp = SOTA_GetDateTimestamp(),
+		author = UnitName("player"),
+		entries = {},
+	};
+
+	for n=1, memberCount, 1 do
+		local name, rank, rankIndex, level, class, zone, publicnote, officernote, online = GetGuildRosterInfo(n);
+		if name then
+			snapshot.entries[name] = {
+				public = publicnote or "",
+				officer = canViewOfficer and (officernote or "") or nil,
+				rank = rank,
+				rankIndex = rankIndex,
+				class = class,
+				zone = zone,
+				online = online and 1 or 0,
+			};
+		end
+	end
+
+	SOTA_NOTES_BACKUP[table.getn(SOTA_NOTES_BACKUP) + 1] = snapshot;
+
+	localEcho(string.format("Notes backup saved (#%d). Members: %d", table.getn(SOTA_NOTES_BACKUP), memberCount));
+	return true;
+end
