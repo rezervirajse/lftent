@@ -3,23 +3,23 @@
 SOTA_RULES = {
 	raid_tiers = {
 		T1 = {
-			"MoltenCore",
-			"BWL",
-			"Emeral Sanctum",
+			"Molten Core",
+			"Blackwing Lair",
+			"Emerald Sanctum",
 		},
 		T2 = {
-			"Nax",
-			"TempleOFQa",
+			"Naxxramas",
+			"Ahn'Qiraj",
 			"Kara40",
 		},
 	},
 
 	raid_tier_by_name = {
-		["MoltenCore"] = "T1",
-		["BWL"] = "T1",
-		["Emeral Sanctum"] = "T1",
-		["Nax"] = "T2",
-		["TempleOFQa"] = "T2",
+		["Molten Core"] = "T1",
+		["Blackwing Lair"] = "T1",
+		["Emerald Sanctum"] = "T1",
+		["Naxxramas"] = "T2",
+		["Ahn'Qiraj"] = "T2",
 		["Kara40"] = "T2",
 	},
 
