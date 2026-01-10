@@ -205,7 +205,7 @@ function SOTA_RefreshRulesConfig()
 		raidTextFrame:SetText(raidText);
 	end
 
-	local gainLines = { "Range -> Gain" };
+	local gainLines = { "Your current points | The amount you will get" };
 	for n=1, table.getn(gainTable), 1 do
 		local row = gainTable[n];
 		if row and row.min and row.max and row.gain then
