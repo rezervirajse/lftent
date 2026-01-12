@@ -29,8 +29,11 @@ local RaidState					= RAID_STATE_DISABLED
 local AuctionedItemLink			= ""
 local AuctionState				= STATE_NONE
 
--- Auction whisper helper (always allowed; privacy is handled for public channels).
+-- Auction privacy: suppress automatic whispers unless explicitly enabled.
 local function SOTA_AuctionWhisper(receiver, msg)
+	if SOTA_CONFIG_PrivateAuctions ~= 0 then
+		return;
+	end
 	SOTA_whisper(receiver, msg);
 end
 
@@ -242,7 +245,6 @@ function SOTA_HandlePlayerBid(sender, message)
 	end
 
 	local availableDkp = 1 * (playerInfo[2]);
-	local ignoreBidDkp = (SOTA_CONFIG_IgnoreBidDKP == 1);
 	
 	local cmd, arg
 	local spacepos = string.find(message, "%s");
@@ -290,65 +292,12 @@ function SOTA_HandlePlayerBid(sender, message)
 	dkp = 1 * dkp
 
 	local userWentAllIn = false;
-	local highestBid = SOTA_GetHighestBid(bidtype);
-	local allowZeroBid = (dkp == 0);
-
-	local hiRankIndex = 0;
-	local hiBid = 0;
-	if highestBid then
-		hiBid = highestBid[2];
-		hiRankIndex = highestBid[6];
-	end;
-
-
 
 	local bidderClass = playerInfo[3];		-- Info for the player placing the bid.
 	local bidderRank  = playerInfo[4];		-- This rank is by NAME
 	local bidderRIdx  = playerInfo[7];		-- This rank is by NUMBER!
 	
-	-- Check bidding using Custom Bidding Strategy.
-	-- This does currently NOT check the min. bid, but it handles player ranks.
-	--[[
-	if SOTA_CONFIG_MinimumBidStrategy == 5 then
-		local variables = { }
-		variables['bid'] = dkp;
-		variables['min'] = hiBid;
-		variables['bidrank'] = hiRankIndex;		--Rank for the current highest bid (idx)
-		variables['currank'] = bidderRIdx;		--Rank for the player bidding (idx); Lower = better.
-
-		local ruleInfo = SOTA_ParseRules(variables);
-
-		if(ruleInfo['VALID']) and (ruleInfo['RESULT']) then
-			if(ruleInfo['RULETYPE'] == SOTA_RULETYPE_SUCCESS) then
-				-- A valid rule was found; continue with the bidding!
-			else
-				SOTA_whisper(sender, ruleInfo['MESSAGE']);
-				return;
-			end;
-		end;
-	end;
-	--]]
-
-
-	-- Check user at least did bid more than last bidder:
-	if(dkp > hiBid) then
-		-- He did, but he also bid less than the minimum DKP:
-		if (not ignoreBidDkp) and (availableDkp < dkp) then
-			-- If he doesnt have enough DKP, then let him go all out:
-			if(availableDkp < minimumBid) and (availableDkp > hiBid) then
-				dkp = availableDkp;
-				userWentAllIn = true;
-			else
-				SOTA_AuctionWhisper(sender, string.format("You only have %d DKP - bid was ignored.", availableDkp));
-				return;
-			end;
-		end
-	end;
-
-	if not(userWentAllIn) and (dkp < minimumBid) and not allowZeroBid then
-		SOTA_AuctionWhisper(sender, string.format("You must bid at least %s DKP - bid was ignored.", minimumBid));
-		return;
-	end
+	
 
 
 	if Seconds < SOTA_CONFIG_AuctionExtension then
@@ -367,34 +316,16 @@ function SOTA_HandlePlayerBid(sender, message)
 		end;
 	else
 		if bidtype == 2 then
-			--publicEcho(string.format("%s is bidding %d Off-spec for %s", sender, dkp, AuctionedItemLink));
-			--publicEcho(SOTA_getConfigurableMessage(SOTA_MSG_OnOffspecBid, AuctionedItemLink, dkp, sender, bidderRank));
 			SOTA_EchoEvent(SOTA_MSG_OnOffspecBid, AuctionedItemLink, dkp, sender, bidderRank);
 		else
-			--publicEcho(string.format("%s (%s) is bidding %d DKP for %s", sender, bidderRank, dkp, AuctionedItemLink));
-			--publicEcho(SOTA_getConfigurableMessage(SOTA_MSG_OnMainspecBid, AuctionedItemLink, dkp, sender, bidderRank));
+		
 			SOTA_EchoEvent(SOTA_MSG_OnMainspecBid, AuctionedItemLink, dkp, sender, bidderRank);
 		end;
 	end;
 	
 
 	SOTA_RegisterBid(sender, dkp, bidtype, bidderClass, bidderRank, bidderRIdx);
-	
 		
-	-- Checks to perform now:
-	-- * Do user have enough DKP?	(Done)
-	-- * Do user bid <minimum dkp>? (Done)
-	--		* exception: if he goes all out he is allowed to go below minimum dkp
-	-- * Is user already the highest bidder? (should we let users screw up? I personally think so!)
-
-	-- OS/MS:
-	--	- Check if MS>OS is enabled
-	--	- MS bid: Check for highest MS bid (not OS bid)
-	--	- OS bid: check of any MS bid was made previous, and skip if so!
-
-
-	-- TODO:
-	-- Hide incoming whispers for local player (how?)		
 end
 
 
@@ -523,13 +454,9 @@ function SOTA_HandlePlayerPass(playername)
 
 	if (size > 1) then
 		local nextbid = IncomingBidsTable[2];
-		if SOTA_CONFIG_PrivateAuctions == 0 then
-			raidEcho(string.format("%s passed; highest bid is now by %s for %d DKP", playername, nextbid[1], nextbid[2]));
-		end
+		raidEcho(string.format("%s passed; highest bid is now by %s for %d DKP", playername, nextbid[1], nextbid[2]));
 	else
-		if SOTA_CONFIG_PrivateAuctions == 0 then
-			raidEcho(string.format("%s passed; there are currently no active bids.", playername));
-		end
+		raidEcho(string.format("%s passed; there are currently no active bids.", playername));
 	end;
 
 	SOTA_UnregisterBid(lastbid[1], lastbid[2]);		
@@ -883,3 +810,4 @@ function SOTA_OnBidClick(object)
 
 	SOTA_ShowSelectedPlayer(bidder, bid);
 end
+
