@@ -122,6 +122,7 @@ SOTA_CONFIG_EnableOSBidding		= 1;	-- Enable MS bidding over OS
 SOTA_CONFIG_EnableZoneCheck		= 1;	-- Enable zone check when doing raid queue DKP
 SOTA_CONFIG_EnableOnlineCheck	= 1;	-- Enable online check when doing raid queue DKP
 SOTA_CONFIG_AllowPlayerPass     = 1;	-- 0: No pass, 1: can pass latest bid
+SOTA_CONFIG_PrivateAuctions		= 1;	-- 1: suppress auction whispers, 0: allow
 SOTA_CONFIG_DisableDashboard	= 0;	-- Disable Dashboard in UI (hide it)
 SOTA_CONFIG_OutputChannel		= WARN_CHANNEL;
 SOTA_CONFIG_Messages			= { }	-- Contains configurable raid messages (if any)

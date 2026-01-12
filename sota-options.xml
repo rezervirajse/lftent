@@ -457,11 +457,27 @@
 					</OnClick>
 				</Scripts>
 			</CheckButton>
+			<!-- Private auctions (suppress auto whispers) -->
+			<CheckButton name="$parentPrivateAuctions" inherits="OptionsCheckButtonTemplate">
+				<Anchors>
+					<Anchor point="TOPLEFT">
+						<Offset x="32" y="-302"/>
+					</Anchor>
+				</Anchors>
+				<Scripts>
+					<OnLoad>
+						getglobal(this:GetName().."Text"):SetText("Private auctions (suppress auto whispers)")
+					</OnLoad>
+					<OnClick>
+						SOTA_HandleCheckbox(this);
+					</OnClick>
+				</Scripts>
+			</CheckButton>
 			<!-- Disable Dashboard ? -->
 			<CheckButton name="$parentDisableDashboard" inherits="OptionsCheckButtonTemplate">
 				<Anchors>
 					<Anchor point="TOPLEFT">
-						<Offset x="32" y="-302"/>
+						<Offset x="32" y="-328"/>
 					</Anchor>
 				</Anchors>
 				<Scripts>

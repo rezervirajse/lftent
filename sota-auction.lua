@@ -29,6 +29,13 @@ local RaidState					= RAID_STATE_DISABLED
 local AuctionedItemLink			= ""
 local AuctionState				= STATE_NONE
 
+-- Auction privacy: suppress automatic whispers unless explicitly enabled.
+local function SOTA_AuctionWhisper(receiver, msg)
+	if SOTA_CONFIG_PrivateAuctions ~= 0 then
+		return;
+	end
+	SOTA_whisper(receiver, msg);
+end
 
 
 function SOTA_GetSecondCounter()
@@ -227,7 +234,7 @@ end
 function SOTA_HandlePlayerBid(sender, message)
 	local playerInfo = SOTA_GetGuildPlayerInfo(sender);
 	if not playerInfo then
-		SOTA_whisper(sender, "You need to be in the guild to do bidding!");
+		SOTA_AuctionWhisper(sender, "You need to be in the guild to do bidding!");
 		return;
 	end
 
@@ -259,7 +266,7 @@ function SOTA_HandlePlayerBid(sender, message)
 
 	local minimumBid = SOTA_GetMinimumBid(bidtype);
 	if not minimumBid then
-		SOTA_whisper(sender, "You cannot OS bid if an MS bid is already made.");
+		SOTA_AuctionWhisper(sender, "You cannot OS bid if an MS bid is already made.");
 		return;
 	end
 	
@@ -278,7 +285,7 @@ function SOTA_HandlePlayerBid(sender, message)
 	end	
 
 	if not (AuctionState == STATE_AUCTION_RUNNING) then
-		SOTA_whisper(sender, "There is currently no auction running - bid was ignored.");
+		SOTA_AuctionWhisper(sender, "There is currently no auction running - bid was ignored.");
 		return;
 	end	
 
@@ -286,6 +293,7 @@ function SOTA_HandlePlayerBid(sender, message)
 
 	local userWentAllIn = false;
 	local highestBid = SOTA_GetHighestBid(bidtype);
+	local allowZeroBid = (dkp == 0);
 
 	local hiRankIndex = 0;
 	local hiBid = SOTA_GetStartingDKP(bidtype);
@@ -333,14 +341,14 @@ function SOTA_HandlePlayerBid(sender, message)
 				dkp = availableDkp;
 				userWentAllIn = true;
 			else
-				SOTA_whisper(sender, string.format("You only have %d DKP - bid was ignored.", availableDkp));
+				SOTA_AuctionWhisper(sender, string.format("You only have %d DKP - bid was ignored.", availableDkp));
 				return;
 			end;
 		end
 	end;
 
-	if not(userWentAllIn) and (dkp < minimumBid) then
-		SOTA_whisper(sender, string.format("You must bid at least %s DKP - bid was ignored.", minimumBid));
+	if not(userWentAllIn) and (dkp < minimumBid) and not allowZeroBid then
+		SOTA_AuctionWhisper(sender, string.format("You must bid at least %s DKP - bid was ignored.", minimumBid));
 		return;
 	end
 
@@ -395,9 +403,9 @@ end
 
 function SOTA_RegisterBid(playername, bid, bidtype, playerclass, rankname, rankindex)
 	if bidtype == 2 then
-		SOTA_whisper(playername, string.format("Your Off-spec bid of %d DKP has been registered.", bid) );
+		SOTA_AuctionWhisper(playername, string.format("Your Off-spec bid of %d DKP has been registered.", bid) );
 	else
-		SOTA_whisper(playername, string.format("Your bid of %d DKP has been registered.", bid) );
+		SOTA_AuctionWhisper(playername, string.format("Your bid of %d DKP has been registered.", bid) );
 	end
 
 	IncomingBidsTable = SOTA_RenumberTable(IncomingBidsTable);
@@ -491,12 +499,12 @@ end
 --]]
 function SOTA_HandlePlayerPass(playername)
 	if (SOTA_CONFIG_AllowPlayerPass == 0) then
-		SOTA_whisper(playername, "Sorry, but you cannot pass once you've made a bid!");
+		SOTA_AuctionWhisper(playername, "Sorry, but you cannot pass once you've made a bid!");
 		return;
 	end;
 
 	if not(AuctionState == STATE_AUCTION_RUNNING) then
-		SOTA_whisper(playername, "There is currently no auction running - pass was ignored.");
+		SOTA_AuctionWhisper(playername, "There is currently no auction running - pass was ignored.");
 		return;
 	end;
 
@@ -505,13 +513,13 @@ function SOTA_HandlePlayerPass(playername)
 	local size = table.getn(IncomingBidsTable);
 
 	if (size == 0) then
-		SOTA_whisper(playername, "There are no bids for this action to pass.");
+		SOTA_AuctionWhisper(playername, "There are no bids for this action to pass.");
 		return;
 	end;
 
 	local lastbid = IncomingBidsTable[1];
 	if not(playername == lastbid[1]) then
-		SOTA_whisper(playername, "You can only pass if you have the latest bid!");
+		SOTA_AuctionWhisper(playername, "You can only pass if you have the latest bid!");
 		return;
 	end;
 
@@ -873,5 +881,4 @@ function SOTA_OnBidClick(object)
 
 	SOTA_ShowSelectedPlayer(bidder, bid);
 end
-
 

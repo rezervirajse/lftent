@@ -205,7 +205,7 @@ function SOTA_RefreshRulesConfig()
 		raidTextFrame:SetText(raidText);
 	end
 
-	local gainLines = { "Your current points | The amount you will get" };
+	local gainLines = { "Your current points dictate the amount you will get based on the table below" };
 	for n=1, table.getn(gainTable), 1 do
 		local row = gainTable[n];
 		if row and row.min and row.max and row.gain then
@@ -342,6 +342,9 @@ function SOTA_InitializeConfigSettings()
 	if not SOTA_CONFIG_AllowPlayerPass then
 		SOTA_CONFIG_AllowPlayerPass = 1;
 	end;
+	if not SOTA_CONFIG_PrivateAuctions then
+		SOTA_CONFIG_PrivateAuctions = 1;
+	end
 	if not SOTA_CONFIG_DisableDashboard then
 		SOTA_CONFIG_DisableDashboard = 1;
 	end
@@ -357,6 +360,7 @@ function SOTA_InitializeConfigSettings()
 	getglobal("FrameConfigBiddingEnableZonecheck"):SetChecked(SOTA_CONFIG_EnableZoneCheck);
 	getglobal("FrameConfigBiddingEnableOnlinecheck"):SetChecked(SOTA_CONFIG_EnableOnlineCheck);
 	getglobal("FrameConfigBiddingAllowPlayerPass"):SetChecked(SOTA_CONFIG_AllowPlayerPass);
+	getglobal("FrameConfigBiddingPrivateAuctions"):SetChecked(SOTA_CONFIG_PrivateAuctions);
 	getglobal("FrameConfigBiddingDisableDashboard"):SetChecked(SOTA_CONFIG_DisableDashboard);
 
 	if SOTA_CONFIG_UseGuildNotes == 1 then
@@ -483,6 +487,16 @@ function SOTA_HandleCheckbox(checkbox)
 			SOTA_CONFIG_AllowPlayerPass = 1;
 		else
 			SOTA_CONFIG_AllowPlayerPass = 0;
+		end
+		return;
+	end
+
+	--	Private auctions:		
+	if checkboxname == "FrameConfigBiddingPrivateAuctions" then
+		if checkbox:GetChecked() then
+			SOTA_CONFIG_PrivateAuctions = 1;
+		else
+			SOTA_CONFIG_PrivateAuctions = 0;
 		end
 		return;
 	end
