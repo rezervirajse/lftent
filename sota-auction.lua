@@ -29,11 +29,8 @@ local RaidState					= RAID_STATE_DISABLED
 local AuctionedItemLink			= ""
 local AuctionState				= STATE_NONE
 
--- Auction privacy: suppress automatic whispers unless explicitly enabled.
+-- Auction whisper helper (always allowed; privacy is handled for public channels).
 local function SOTA_AuctionWhisper(receiver, msg)
-	if SOTA_CONFIG_PrivateAuctions ~= 0 then
-		return;
-	end
 	SOTA_whisper(receiver, msg);
 end
 
@@ -245,6 +242,7 @@ function SOTA_HandlePlayerBid(sender, message)
 	end
 
 	local availableDkp = 1 * (playerInfo[2]);
+	local ignoreBidDkp = (SOTA_CONFIG_IgnoreBidDKP == 1);
 	
 	local cmd, arg
 	local spacepos = string.find(message, "%s");
@@ -296,7 +294,7 @@ function SOTA_HandlePlayerBid(sender, message)
 	local allowZeroBid = (dkp == 0);
 
 	local hiRankIndex = 0;
-	local hiBid = SOTA_GetStartingDKP(bidtype);
+	local hiBid = 0;
 	if highestBid then
 		hiBid = highestBid[2];
 		hiRankIndex = highestBid[6];
@@ -335,7 +333,7 @@ function SOTA_HandlePlayerBid(sender, message)
 	-- Check user at least did bid more than last bidder:
 	if(dkp > hiBid) then
 		-- He did, but he also bid less than the minimum DKP:
-		if (availableDkp < dkp) then
+		if (not ignoreBidDkp) and (availableDkp < dkp) then
 			-- If he doesnt have enough DKP, then let him go all out:
 			if(availableDkp < minimumBid) and (availableDkp > hiBid) then
 				dkp = availableDkp;
@@ -525,9 +523,13 @@ function SOTA_HandlePlayerPass(playername)
 
 	if (size > 1) then
 		local nextbid = IncomingBidsTable[2];
-		raidEcho(string.format("%s passed; highest bid is now by %s for %d DKP", playername, nextbid[1], nextbid[2]));
+		if SOTA_CONFIG_PrivateAuctions == 0 then
+			raidEcho(string.format("%s passed; highest bid is now by %s for %d DKP", playername, nextbid[1], nextbid[2]));
+		end
 	else
-		raidEcho(string.format("%s passed; there are currently no active bids.", playername));
+		if SOTA_CONFIG_PrivateAuctions == 0 then
+			raidEcho(string.format("%s passed; there are currently no active bids.", playername));
+		end
 	end;
 
 	SOTA_UnregisterBid(lastbid[1], lastbid[2]);		
@@ -881,4 +883,3 @@ function SOTA_OnBidClick(object)
 
 	SOTA_ShowSelectedPlayer(bidder, bid);
 end
-

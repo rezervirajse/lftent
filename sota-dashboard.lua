@@ -1214,7 +1214,7 @@ end
 function SOTA_OnZoneChanged()
 	if SOTA_IsInRaid(true) then
 		local dkp = SOTA_GetBossDKPValue("WorldBosses");
-		local min = SOTA_GetStartingDKP();
+		local min = SOTA_GetMinimumBid();
 		if dkp > 0 then
 			local zonetext = GetRealZoneText();
 			if zonetext == "Azshara" then
@@ -1367,5 +1367,4 @@ function SOTA_OnLoad()
 
 	SOTA_InitializeTextElements();
 end
-
 

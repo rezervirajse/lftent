@@ -10,9 +10,37 @@
 local SOTA_MAX_MESSAGES			= 15
 local ConfigurationDialogOpen	= false;
 
+local SOTA_AUCTION_MESSAGE_KEYS = {
+	[SOTA_MSG_OnAnnounceBid] = true,
+	[SOTA_MSG_OnAnnounceMinBid] = true,
+	[SOTA_MSG_On10SecondsLeft] = true,
+	[SOTA_MSG_On9SecondsLeft] = true,
+	[SOTA_MSG_On8SecondsLeft] = true,
+	[SOTA_MSG_On7SecondsLeft] = true,
+	[SOTA_MSG_On6SecondsLeft] = true,
+	[SOTA_MSG_On5SecondsLeft] = true,
+	[SOTA_MSG_On4SecondsLeft] = true,
+	[SOTA_MSG_On3SecondsLeft] = true,
+	[SOTA_MSG_On2SecondsLeft] = true,
+	[SOTA_MSG_On1SecondLeft] = true,
+	[SOTA_MSG_OnMainspecBid] = true,
+	[SOTA_MSG_OnOffspecBid] = true,
+	[SOTA_MSG_OnMainspecMaxBid] = true,
+	[SOTA_MSG_OnOffspecMaxBid] = true,
+	[SOTA_MSG_OnOpen] = true,
+	[SOTA_MSG_OnComplete] = true,
+	[SOTA_MSG_OnPause] = true,
+	[SOTA_MSG_OnResume] = true,
+	[SOTA_MSG_OnClose] = true,
+	[SOTA_MSG_OnCancel] = true,
+}
+
 
 
 function SOTA_EchoEvent(msgKey, item, dkp, bidder, rank, param1, param2, param3)
+	if SOTA_CONFIG_PrivateAuctions == 1 and SOTA_AUCTION_MESSAGE_KEYS[msgKey] then
+		return;
+	end
 	local msgInfo = SOTA_getConfigurableMessage(msgKey, item, dkp, bidder, rank, param1, param2, param3);
 	publicEcho(msgInfo);
 end;
@@ -345,6 +373,9 @@ function SOTA_InitializeConfigSettings()
 	if not SOTA_CONFIG_PrivateAuctions then
 		SOTA_CONFIG_PrivateAuctions = 1;
 	end
+	if not SOTA_CONFIG_IgnoreBidDKP then
+		SOTA_CONFIG_IgnoreBidDKP = 1;
+	end
 	if not SOTA_CONFIG_DisableDashboard then
 		SOTA_CONFIG_DisableDashboard = 1;
 	end
@@ -360,6 +391,7 @@ function SOTA_InitializeConfigSettings()
 	getglobal("FrameConfigBiddingEnableZonecheck"):SetChecked(SOTA_CONFIG_EnableZoneCheck);
 	getglobal("FrameConfigBiddingEnableOnlinecheck"):SetChecked(SOTA_CONFIG_EnableOnlineCheck);
 	getglobal("FrameConfigBiddingAllowPlayerPass"):SetChecked(SOTA_CONFIG_AllowPlayerPass);
+	getglobal("FrameConfigBiddingIgnoreBidDKP"):SetChecked(SOTA_CONFIG_IgnoreBidDKP);
 	getglobal("FrameConfigBiddingPrivateAuctions"):SetChecked(SOTA_CONFIG_PrivateAuctions);
 	getglobal("FrameConfigBiddingDisableDashboard"):SetChecked(SOTA_CONFIG_DisableDashboard);
 
@@ -487,6 +519,16 @@ function SOTA_HandleCheckbox(checkbox)
 			SOTA_CONFIG_AllowPlayerPass = 1;
 		else
 			SOTA_CONFIG_AllowPlayerPass = 0;
+		end
+		return;
+	end
+
+	--	Allow bidding without DKP:
+	if checkboxname == "FrameConfigBiddingIgnoreBidDKP" then
+		if checkbox:GetChecked() then
+			SOTA_CONFIG_IgnoreBidDKP = 1;
+		else
+			SOTA_CONFIG_IgnoreBidDKP = 0;
 		end
 		return;
 	end
