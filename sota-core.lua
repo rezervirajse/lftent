@@ -466,19 +466,15 @@ function SOTA_RefreshGuildRoster()
 		end
 		
 		if not note or note == "" then
-			note = "<0>";
+			note = "[0:0]";
 		end
 		
 		if not online then
 			online = 0;
 		end
 		
-		local _, _, dkp = string.find(note, "%[(%d+):(%d+)%]")
-		if not dkp or not tonumber(dkp) then
-			dkp = 0;
-		end
-
-		local t1, t2 = SOTA_ParseTierPoints(note);
+		local t1, t2 = SOTA_ParseDkpTiers(note);
+		local dkp = (1 * t1) + (1 * t2);
 		
 		--echo(string.format("Added %s (%s)", name, online));
 		
@@ -684,11 +680,17 @@ end
 --	Get DKP belonging to a specific player.
 --	Returns NIL if player was not found. Players with no DKP will return 0.
 --]]
-function SOTA_GetDKP(playername)
+function SOTA_GetDKP(playername, tier)
 	local dkp = nil;
 	local playerInfo = SOTA_GetGuildPlayerInfo(playername);
 	if playerInfo then
-		dkp = 1 * (playerInfo[2]);
+		if tier == 1 then
+			dkp = 1 * (playerInfo[8] or 0);
+		elseif tier == 2 then
+			dkp = 1 * (playerInfo[9] or 0);
+		else
+			dkp = 1 * (playerInfo[2] or 0);
+		end
 	end
 	
 	return dkp;
@@ -698,17 +700,21 @@ function SOTA_GetDKP(playername)
 --[[
 --	Add <dkp> DKP to <playername>
 --]]
-function SOTA_Call_AddPlayerDKP(playername, dkp)
+function SOTA_Call_AddPlayerDKP(playername, dkp, tier)
 	if SOTA_CanDoDKP() then
 		RaidState = RAID_STATE_ENABLED;
 		SOTA_RequestMaster();
-		SOTA_AddJob( function(job) SOTA_AddPlayerDKP(job[2], job[3]) end, playername, dkp )
+		SOTA_AddJob( function(job) SOTA_AddPlayerDKP(job[2], job[3], job[4]) end, playername, dkp, tier )
 		SOTA_RequestUpdateGuildRoster();
 	end
 end
-function SOTA_AddPlayerDKP(playername, dkpValue, silentmode)
+function SOTA_AddPlayerDKP(playername, dkpValue, tier, silentmode)
+	if type(tier) == "boolean" and silentmode == nil then
+		silentmode = tier;
+		tier = nil;
+	end
 	dkpValue = 1 * dkpValue;
-	if SOTA_ApplyPlayerDKP(playername, dkpValue) then
+	if SOTA_ApplyPlayerDKP(playername, dkpValue, silentmode, tier) then
 		playername = SOTA_UCFirst(playername);
 		if not silentmode then
 			--publicEcho(string.format("%d DKP was added to %s", dkpValue, playername));
@@ -761,17 +767,21 @@ end
 --[[
 --	Subtract <dkp> DKP from <playername>
 --]]
-function SOTA_Call_SubtractPlayerDKP(playername, dkp)
+function SOTA_Call_SubtractPlayerDKP(playername, dkp, tier)
 	if SOTA_CanDoDKP() and tonumber(dkp) then
 		RaidState = RAID_STATE_ENABLED;
 		SOTA_RequestMaster();
-		SOTA_AddJob( function(job) SOTA_SubtractPlayerDKP(job[2], job[3]) end, playername, dkp )
+		SOTA_AddJob( function(job) SOTA_SubtractPlayerDKP(job[2], job[3], job[4]) end, playername, dkp, tier )
 		SOTA_RequestUpdateGuildRoster();
 	end
 end
-function SOTA_SubtractPlayerDKP(playername, dkpValue, silentmode)
+function SOTA_SubtractPlayerDKP(playername, dkpValue, tier, silentmode)
+	if type(tier) == "boolean" and silentmode == nil then
+		silentmode = tier;
+		tier = nil;
+	end
 	dkpValue = -1 * dkpValue;
-	if SOTA_ApplyPlayerDKP(playername, dkpValue) then
+	if SOTA_ApplyPlayerDKP(playername, dkpValue, silentmode, tier) then
 		playername = SOTA_UCFirst(playername);
 		if not silentmode then
 --			publicEcho(string.format("%d DKP was subtracted from %s", abs(dkpValue), playername));
@@ -781,26 +791,29 @@ function SOTA_SubtractPlayerDKP(playername, dkpValue, silentmode)
 	end
 end
 
-function SOTA_Call_SubtractPlayerDKPPercent(playername, percent)
+function SOTA_Call_SubtractPlayerDKPPercent(playername, percent, tier)
 	if SOTA_IsInRaid(true) then
 		RaidState = RAID_STATE_ENABLED;
 		SOTA_RequestMaster();
-		SOTA_AddJob( function(job) SOTA_SubtractPlayerDKPPercent(job[2], job[3]) end, playername, percent )
+		SOTA_AddJob( function(job) SOTA_SubtractPlayerDKPPercent(job[2], job[3], job[4]) end, playername, percent, tier )
 		SOTA_RequestUpdateGuildRoster();
 	end
 end
-function SOTA_SubtractPlayerDKPPercent(playername, percent, silentmode)
+function SOTA_SubtractPlayerDKPPercent(playername, percent, silentmode, tier)
+	if tier ~= 1 and tier ~= 2 then
+		tier = 1;
+	end
 	playername = SOTA_UCFirst(playername);
 	local playerInfo = SOTA_GetGuildPlayerInfo(playername);
 	if playerInfo then
 		percent = 1 * percent;
-		local dkp = 1 * (playerInfo[2]);
+		local dkp = 1 * (SOTA_GetDKP(playername, tier) or 0);
 		local minus = floor(dkp * percent / 100);
 		if minus < SOTA_CONFIG_MinimumDKPPenalty then
 			minus = SOTA_CONFIG_MinimumDKPPenalty;
 		end
 		
-		SOTA_ApplyPlayerDKP(playername, -1 * minus, true);
+		SOTA_ApplyPlayerDKP(playername, -1 * minus, true, tier);
 		
 		if not silentmode then
 --			publicEcho(string.format("%d %% (%d DKP) was subtracted from %s", percent, minus, playername));
@@ -1512,12 +1525,30 @@ function SOTA_ParseTierPoints(note)
 		return 0, 0;
 	end
 
-	local _, _, t1, t2 = string.find(note, "%[(%d+):(%d+)%]");
+	local _, _, t1, t2 = string.find(note, "%[(-?%d+):(-?%d+)%]");
 	if not t1 or not t2 then
 		return 0, 0;
 	end
 
 	return (1 * t1), (1 * t2);
+end
+
+function SOTA_ParseDkpTiers(note)
+	if not note then
+		return 0, 0;
+	end
+
+	local _, _, t1, t2 = string.find(note, "%[(-?%d+):(-?%d+)%]");
+	if t1 and t2 then
+		return (1 * t1), (1 * t2);
+	end
+
+	local _, _, dkp = string.find(note, "<(-?%d+)>");
+	if dkp and tonumber(dkp) then
+		return (1 * dkp), 0;
+	end
+
+	return 0, 0;
 end
 
 function SOTA_CreateTierPointsString(t1, t2)
@@ -1537,8 +1568,8 @@ function SOTA_UpdateTierPointsInNote(note, t1, t2)
 	end
 
 	local tierString = SOTA_CreateTierPointsString(t1, t2);
-	if string.find(note, "%[%d+:%d+%]") then
-		note = string.gsub(note, "%[%d+:%d+%]", tierString, 1);
+	if string.find(note, "%[%-?%d+:%-?%d+%]") then
+		note = string.gsub(note, "%[%-?%d+:%-?%d+%]", tierString, 1);
 	else
 		note = note .. tierString;
 	end
