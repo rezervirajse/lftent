@@ -508,67 +508,6 @@
 		</Frames>
 	</Frame>
 	
-	<!-- Configuration Frame 1.2: Boss DKP options -->
-	<!-- 20 mans (ZG, AQ20) -->
-	<Frame name="FrameConfigBossDkp" parent="UIParent" inherits="SOTA_ConfigurationFrameTemplate">
-		<Frames>
-			<Slider name="$parent_20Mans" inherits="SOTA_BossDKPSlider">
-				<Anchors>
-					<Anchor point="TOPLEFT">
-						<Offset x="28" y="-124"/>
-					</Anchor>
-				</Anchors>
-			</Slider>
-			<!-- Molten Core -->
-			<Slider name="$parent_MoltenCore" inherits="SOTA_BossDKPSlider">
-				<Anchors>
-					<Anchor point="TOPLEFT">
-						<Offset x="28" y="-156"/>
-					</Anchor>
-				</Anchors>
-			</Slider>
-			<!-- Onyxia -->
-			<Slider name="$parent_Onyxia" inherits="SOTA_BossDKPSlider">
-				<Anchors>
-					<Anchor point="TOPLEFT">
-						<Offset x="28" y="-188"/>
-					</Anchor>
-				</Anchors>
-			</Slider>
-			<!-- Blackwing Lair -->
-			<Slider name="$parent_BlackwingLair" inherits="SOTA_BossDKPSlider">
-				<Anchors>
-					<Anchor point="TOPLEFT">
-						<Offset x="28" y="-220"/>
-					</Anchor>
-				</Anchors>
-			</Slider>
-			<!-- AQ40 -->
-			<Slider name="$parent_AQ40" inherits="SOTA_BossDKPSlider">
-				<Anchors>
-					<Anchor point="TOPLEFT">
-						<Offset x="28" y="-252"/>
-					</Anchor>
-				</Anchors>
-			</Slider>
-			<!-- Naxxramas -->
-			<Slider name="$parent_Naxxramas" inherits="SOTA_BossDKPSlider">
-				<Anchors>
-					<Anchor point="TOPLEFT">
-						<Offset x="28" y="-284"/>
-					</Anchor>
-				</Anchors>
-			</Slider>
-			<!-- World Bosses -->
-			<Slider name="$parent_WorldBosses" inherits="SOTA_BossDKPSlider">
-				<Anchors>
-					<Anchor point="TOPLEFT">
-						<Offset x="28" y="-316"/>
-					</Anchor>
-				</Anchors>
-			</Slider>
-		</Frames>
-	</Frame>
 	
 	<!-- Configuration Frame 1.3: Misc. DKP -->
 	<!-- Public Guild Notes, options: 0, 1 -->
