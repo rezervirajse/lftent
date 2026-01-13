@@ -129,7 +129,17 @@
 					</OnClick>
 				</Scripts>
 			</Button>
-			
+			<!-- Line 1, button 2: Boss DKP config button -->
+			<Button name="$parentConfigTabButton2" inherits="UIPanelButtonTemplate" text="Boss DKP">
+				<Size>
+					<AbsDimension x="80" y="23" />
+				</Size>
+				<Anchors>
+					<Anchor point="LEFT" relativeTo="$parentConfigTabButton1" relativePoint="LEFT">
+						<Offset x="84" y="0" />
+					</Anchor>
+				</Anchors>
+			</Button>
 			<!-- Line 1, button 3: Misc DKP config button -->
 			<Button name="$parentConfigTabButton2" inherits="UIPanelButtonTemplate" text="Misc DKP2">
 				<Size>
