@@ -267,21 +267,6 @@
 		</Scripts>
 	</Frame>
 
-	<!-- Boss DKP slider (config element for Boss DKP)  -->
-	<Slider name="SOTA_BossDKPSlider" minValue="0" maxValue="4000" defaultValue="400" valueStep="100" inherits="OptionsSliderTemplate" virtual="true">
-		<Size>
-			<AbsDimension x="300" y="14" />
-		</Size>
-		<Scripts>
-			<OnLoad>
-				getglobal(this:GetName().."Low"):SetText("0")
-				getglobal(this:GetName().."High"):SetText("4000")
-			</OnLoad>
-			<OnValueChanged>
-				SOTA_OnOptionBossDKPChanged(this);
-			</OnValueChanged>
-		</Scripts>
-	</Slider>
 
 	<!-- Template for Message list entries -->
 	<Button name="SOTA_TextTemplate" hidden="true" virtual="true">
