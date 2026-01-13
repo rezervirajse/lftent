@@ -831,16 +831,19 @@ end
 --[[
 --	Add <n> DKP to all players in raid and in queue
 --]]
-function SOTA_Call_AddRaidDKP(dkp)
+function SOTA_Call_AddRaidDKP(dkp, tier)
 	if SOTA_IsInRaid(true) then
 		RaidState = RAID_STATE_ENABLED;
 		SOTA_RequestMaster();
-		SOTA_AddJob( function(job) SOTA_AddRaidDKP(job[2]) end, dkp, "_" )
+		SOTA_AddJob( function(job) SOTA_AddRaidDKP(job[2], nil, nil, job[3]) end, dkp, tier )
 		SOTA_RequestUpdateGuildRoster();
 	end
 end
 local SOTA_QueuedPlayersImpacted;
-function SOTA_AddRaidDKP(dkp, silentmode, callMethod)
+function SOTA_AddRaidDKP(dkp, silentmode, callMethod, tier)
+	if tier ~= 1 and tier ~= 2 then
+		tier = 1;
+	end
 	SOTA_QueuedPlayersImpacteded = 0;
 
 	if SOTA_IsInRaid(true) then	
@@ -854,12 +857,12 @@ function SOTA_AddRaidDKP(dkp, silentmode, callMethod)
 		local tidChanges = { }
 
 		local raidRoster = SOTA_GetRaidRoster();
-		for n=1, table.getn(raidRoster), 1 do
-			SOTA_ApplyPlayerDKP(raidRoster[n][1], dkp);
-			
-			tidChanges[tidIndex] = { raidRoster[n][1], dkp };
-			tidIndex = tidIndex + 1;
-		end
+			for n=1, table.getn(raidRoster), 1 do
+				SOTA_ApplyPlayerDKP(raidRoster[n][1], dkp, nil, tier);
+				
+				tidChanges[tidIndex] = { raidRoster[n][1], dkp };
+				tidIndex = tidIndex + 1;
+			end
 		
 		local instance, zonename;
 		local zonecheck = SOTA_CONFIG_EnableZoneCheck;
@@ -892,7 +895,7 @@ function SOTA_AddRaidDKP(dkp, silentmode, callMethod)
 				end;
 								
 				if eligibleForDKP then				   
-					SOTA_ApplyPlayerDKP(SOTA_RaidQueue[n][1], dkp);				
+					SOTA_ApplyPlayerDKP(SOTA_RaidQueue[n][1], dkp, nil, tier);				
 					tidChanges[tidIndex] = { SOTA_RaidQueue[n][1], dkp };
 					tidIndex = tidIndex + 1;
 					SOTA_QueuedPlayersImpacteded = SOTA_QueuedPlayersImpacteded + 1;
@@ -914,15 +917,18 @@ end
 --[[
 --	Subtract <n> DKP from each raid and queue member.
 --]]
-function SOTA_Call_SubtractRaidDKP(dkp)
+function SOTA_Call_SubtractRaidDKP(dkp, tier)
 	if SOTA_IsInRaid(true) then
 		RaidState = RAID_STATE_ENABLED;
 		SOTA_RequestMaster();
-		SOTA_AddJob( function(job) SOTA_SubtractRaidDKP(job[2]) end, dkp, "_" )
+		SOTA_AddJob( function(job) SOTA_SubtractRaidDKP(job[2], nil, nil, job[3]) end, dkp, tier )
 		SOTA_RequestUpdateGuildRoster();
 	end
 end
-function SOTA_SubtractRaidDKP(dkp, silentmode, callMethod)
+function SOTA_SubtractRaidDKP(dkp, silentmode, callMethod, tier)
+	if tier ~= 1 and tier ~= 2 then
+		tier = 1;
+	end
 	if SOTA_IsInRaid(true) then	
 		dkp = -1 * dkp;
 
@@ -935,7 +941,7 @@ function SOTA_SubtractRaidDKP(dkp, silentmode, callMethod)
 		
 		local raidRoster = SOTA_GetRaidRoster();
 		for n=1, table.getn(raidRoster), 1 do
-			SOTA_ApplyPlayerDKP(raidRoster[n][1], dkp);
+			SOTA_ApplyPlayerDKP(raidRoster[n][1], dkp, nil, tier);
 			
 			tidChanges[tidIndex] = { raidRoster[n][1], dkp };
 			tidIndex = tidIndex + 1;
@@ -943,11 +949,11 @@ function SOTA_SubtractRaidDKP(dkp, silentmode, callMethod)
 
 		for n=1, table.getn(SOTA_RaidQueue), 1 do
 			local guildInfo = SOTA_GetGuildPlayerInfo(SOTA_RaidQueue[n][1]);
-			if guildInfo and guildInfo[5] == 1 then
-				SOTA_ApplyPlayerDKP(SOTA_RaidQueue[n][1], dkp);
-				
-				tidChanges[tidIndex] = { SOTA_RaidQueue[n][1], dkp };
-				tidIndex = tidIndex + 1;
+				if guildInfo and guildInfo[5] == 1 then
+					SOTA_ApplyPlayerDKP(SOTA_RaidQueue[n][1], dkp, nil, tier);
+					
+					tidChanges[tidIndex] = { SOTA_RaidQueue[n][1], dkp };
+					tidIndex = tidIndex + 1;
 			end
 		end
 		
@@ -967,15 +973,18 @@ end
 --	Add <n> DKP to all in 100 yard range.
 --	1.0.2: result is number of people affected, and not true/false.
 --]]
-function SOTA_Call_AddRangedDKP(dkp)
+function SOTA_Call_AddRangedDKP(dkp, tier)
 	if SOTA_IsInRaid(true) then
 		RaidState = RAID_STATE_ENABLED;
 		SOTA_RequestMaster();
-		SOTA_AddJob( function(job) SOTA_AddRangedDKP(job[2]) end, dkp, "_" )
+		SOTA_AddJob( function(job) SOTA_AddRangedDKP(job[2], nil, nil, nil, job[3]) end, dkp, tier )
 		SOTA_RequestUpdateGuildRoster();
 	end
 end
-function SOTA_AddRangedDKP(dkp, silentmode, dkpLabel, shareTheDKP)
+function SOTA_AddRangedDKP(dkp, silentmode, dkpLabel, shareTheDKP, tier)
+	if tier ~= 1 and tier ~= 2 then
+		tier = 1;
+	end
 	dkp = 1 * dkp;
 
 	SOTA_QueuedPlayersImpacted = 0;
@@ -1014,12 +1023,12 @@ function SOTA_AddRangedDKP(dkp, silentmode, dkpLabel, shareTheDKP)
 		local player = UnitName(unitid);
 
 		if player then
-			if UnitIsConnected(unitid) and UnitIsVisible(unitid) then
-				SOTA_ApplyPlayerDKP(player, dkp, true);
-				
-				tidChanges[tidIndex] = { player, dkp };
-				tidIndex = tidIndex + 1;
-				raidUpdateCount = raidUpdateCount + 1;
+				if UnitIsConnected(unitid) and UnitIsVisible(unitid) then
+					SOTA_ApplyPlayerDKP(player, dkp, true, tier);
+					
+					tidChanges[tidIndex] = { player, dkp };
+					tidIndex = tidIndex + 1;
+					raidUpdateCount = raidUpdateCount + 1;
 			end
 		end
 	end
@@ -1027,7 +1036,7 @@ function SOTA_AddRangedDKP(dkp, silentmode, dkpLabel, shareTheDKP)
 	for n=1, table.getn(SOTA_RaidQueue), 1 do
 		local guildInfo = SOTA_GetGuildPlayerInfo(SOTA_RaidQueue[n][1]);
 		if guildInfo and (SOTA_CONFIG_EnableOnlineCheck == 0 or guildInfo[5] == 1) then
-			SOTA_ApplyPlayerDKP(SOTA_RaidQueue[n][1], dkp);
+			SOTA_ApplyPlayerDKP(SOTA_RaidQueue[n][1], dkp, nil, tier);
 			
 			tidChanges[tidIndex] = { SOTA_RaidQueue[n][1], dkp };
 			tidIndex = tidIndex + 1;
@@ -1089,15 +1098,18 @@ end
 --[[
 --	Share <n> DKP to all members in raid and queue
 --]]
-function SOTA_Call_ShareDKP(dkp)
+function SOTA_Call_ShareDKP(dkp, tier)
 	if SOTA_IsInRaid(true) then
 		RaidState = RAID_STATE_ENABLED;
 		SOTA_RequestMaster();
-		SOTA_AddJob( function(job) SOTA_ShareDKP(job[2]) end, dkp, "_");
+		SOTA_AddJob( function(job) SOTA_ShareDKP(job[2], job[3]) end, dkp, tier, "_");
 		SOTA_RequestUpdateGuildRoster();
 	end
 end
-function SOTA_ShareDKP(sharedDkp)
+function SOTA_ShareDKP(sharedDkp, tier)
+	if tier ~= 1 and tier ~= 2 then
+		tier = 1;
+	end
 	if SOTA_IsInRaid(true) then	
 		sharedDkp = abs(1 * sharedDkp);
 
@@ -1111,7 +1123,7 @@ function SOTA_ShareDKP(sharedDkp)
 			dkp = ceil(sharedDkp / count);
 		end
 		
-		if SOTA_AddRaidDKP(dkp, true, "+Share") then
+		if SOTA_AddRaidDKP(dkp, true, "+Share", tier) then
 			if SOTA_QueuedPlayersImpacteded == 0 then
 --				publicEcho(string.format("%d DKP was shared (%s DKP per player)", sharedDkp, dkp));
 				SOTA_EchoEvent(SOTA_MSG_OnDKPShared, "", dkp, "", "", sharedDkp);
@@ -1129,19 +1141,22 @@ end
 --	Share <n> DKP to all members in range in raid and queue.
 --	Added in 1.0.2.
 --]]
-function SOTA_Call_ShareRangedDKP(dkp)
+function SOTA_Call_ShareRangedDKP(dkp, tier)
 	if SOTA_IsInRaid(true) then
 		RaidState = RAID_STATE_ENABLED;
 		SOTA_RequestMaster();
-		SOTA_AddJob( function(job) SOTA_ShareRangedDKP(job[2]) end, dkp, "_");
+		SOTA_AddJob( function(job) SOTA_ShareRangedDKP(job[2], job[3]) end, dkp, tier, "_");
 		SOTA_RequestUpdateGuildRoster();
 	end
 end
-function SOTA_ShareRangedDKP(sharedDkp)
+function SOTA_ShareRangedDKP(sharedDkp, tier)
+	if tier ~= 1 and tier ~= 2 then
+		tier = 1;
+	end
 	if SOTA_IsInRaid(true) then	
 		sharedDkp = abs(1 * sharedDkp);
 		
-		local inRange = SOTA_AddRangedDKP(sharedDkp, true, "+ShRange", true);
+		local inRange = SOTA_AddRangedDKP(sharedDkp, true, "+ShRange", true, tier);
 		if inRange > 0 then
 			local dkp = ceil(sharedDkp / inRange);
 			if SOTA_QueuedPlayersImpacted == 0 then
