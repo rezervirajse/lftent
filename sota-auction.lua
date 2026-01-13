@@ -290,38 +290,15 @@ function SOTA_HandlePlayerBid(sender, message)
 	end	
 
 	dkp = 1 * dkp
-
-	local userWentAllIn = false;
+	
 
 	local bidderClass = playerInfo[3];		-- Info for the player placing the bid.
 	local bidderRank  = playerInfo[4];		-- This rank is by NAME
 	local bidderRIdx  = playerInfo[7];		-- This rank is by NUMBER!
 	
-	
-
-
 	if Seconds < SOTA_CONFIG_AuctionExtension then
 		Seconds = SOTA_CONFIG_AuctionExtension;
 	end
-	
-	if userWentAllIn then
-		if bidtype == 2 then
-			--publicEcho(string.format("%s went all in (%d) Off-spec for %s", sender, dkp, AuctionedItemLink));
-			--publicEcho(SOTA_getConfigurableMessage(SOTA_MSG_OnOffspecMaxBid, AuctionedItemLink, dkp, sender, bidderRank));
-			SOTA_EchoEvent(SOTA_MSG_OnOffspecMaxBid, AuctionedItemLink, dkp, sender, bidderRank);
-		else
-			--publicEcho(string.format("%s (%s) went all in (%d DKP) for %s", sender, bidderRank, dkp, AuctionedItemLink));
-			--publicEcho(SOTA_getConfigurableMessage(SOTA_MSG_OnMainspecMaxBid, AuctionedItemLink, dkp, sender, bidderRank));
-			SOTA_EchoEvent(SOTA_MSG_OnMainspecMaxBid, AuctionedItemLink, dkp, sender, bidderRank);
-		end;
-	else
-		if bidtype == 2 then
-			SOTA_EchoEvent(SOTA_MSG_OnOffspecBid, AuctionedItemLink, dkp, sender, bidderRank);
-		else
-		
-			SOTA_EchoEvent(SOTA_MSG_OnMainspecBid, AuctionedItemLink, dkp, sender, bidderRank);
-		end;
-	end;
 	
 
 	SOTA_RegisterBid(sender, dkp, bidtype, bidderClass, bidderRank, bidderRIdx);

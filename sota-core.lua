@@ -111,7 +111,7 @@ SOTA_MSG_OnDKPSharedQueue	= "OnDKPSharedQueue";
 SOTA_MSG_OnDKPSharedRange	= "OnDKPSharedRange";
 SOTA_MSG_OnDKPSharedRangeQ	= "OnDKPSharedRangeQueue";
 SOTA_MSG_OnDKPReplaced		= "OnDKPReplaced";
-
+SOTA_MSG_OnPlayerBid 		= "OnPlayerBid"
 
 
 --	Settings (persisted)
