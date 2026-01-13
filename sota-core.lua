@@ -1502,19 +1502,7 @@ function SOTA_CreateDkpString(dkp)
 	end
 	dkp = tonumber(dkp);
 	
-	local dkpLen = tonumber(SOTA_CONFIG_DKPStringLength);
-	if dkpLen > 0 then
-		local dkpStr = "".. abs(dkp)
-		while string.len(dkpStr) < dkpLen do
-			dkpStr = "0"..dkpStr;
-		end
-		if dkp < 0 then
-			dkpStr = "-"..dkpStr;
-		end				
-		result = "<"..dkpStr..">";
-	else
-		result = "<"..dkp..">";
-	end
+	result = "["..dkp..":"..dkp.."]";
 	
 	return result;
 end
