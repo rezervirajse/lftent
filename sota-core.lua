@@ -473,7 +473,7 @@ function SOTA_RefreshGuildRoster()
 			online = 0;
 		end
 		
-		local _, _, dkp = string.find(note, "<(-?%d*)>")
+		local _, _, dkp = string.find(note, "%[(%d+):(%d+)%]")
 		if not dkp or not tonumber(dkp) then
 			dkp = 0;
 		end
@@ -1185,7 +1185,7 @@ function SOTA_Decaytest(percent, silentmode)
 			note = publicNote;
 		end
 
-		local _, _, dkp = string.find(note, "<(-?%d*)>");
+		local _, _, dkp = string.find(note, "%[(%d+):(%d+)%]");
 		if dkp and tonumber(dkp) then
 			local minus = floor(dkp * percent / 100)
 			tidChanges[tidIndex] = { name, (-1 * minus) }
@@ -1194,7 +1194,7 @@ function SOTA_Decaytest(percent, silentmode)
 			dkp = dkp - minus;
 			reducedDkp = reducedDkp + minus;
 			playerCount = playerCount + 1;
-			note = string.gsub(note, "<(-?%d*)>", SOTA_CreateDkpString(dkp), 1);
+			note = string.gsub(note, "%[(%d+):(%d+)%]", SOTA_CreateDkpString(dkp), 1);
 		else
 			dkp = 0;
 			note = note..SOTA_CreateDkpString(dkp);
@@ -1259,7 +1259,7 @@ function SOTA_DecayDKP(percent, silentmode)
 			note = publicNote;
 		end
 
-		local _, _, dkp = string.find(note, "<(-?%d*)>");
+		local _, _, dkp = string.find(note, "%[(%d+):(%d+)%]");
 		if dkp and tonumber(dkp) then
 			local minus = floor(dkp * percent / 100)
 			tidChanges[tidIndex] = { name, (-1 * minus) }
@@ -1268,7 +1268,7 @@ function SOTA_DecayDKP(percent, silentmode)
 			dkp = dkp - minus;
 			reducedDkp = reducedDkp + minus;
 			playerCount = playerCount + 1;
-			note = string.gsub(note, "<(-?%d*)>", SOTA_CreateDkpString(dkp), 1);
+			note = string.gsub(note, "%[(%d+):(%d+)%]", SOTA_CreateDkpString(dkp), 1);
 		else
 			dkp = 0;
 			note = note..SOTA_CreateDkpString(dkp);
@@ -1443,11 +1443,11 @@ function SOTA_ApplyPlayerDKP(playername, dkpValue, silentmode)
 				note = publicNote;
 			end
 		
-			local _, _, dkp = string.find(note, "<(-?%d*)>");
+			local _, _, dkp = string.find(note, "%[(%d+):(%d+)%]");
 
 			if dkp and tonumber(dkp)  then
 				dkp = (1 * dkp) + dkpValue;
-				note = string.gsub(note, "<(-?%d*)>", SOTA_CreateDkpString(dkp), 1);
+				note = string.gsub(note, "%[(%d+):(%d+)%]", SOTA_CreateDkpString(dkp), 1);
 			else
 				dkp = dkpValue;
 				note = note..SOTA_CreateDkpString(dkp);
