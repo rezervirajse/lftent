@@ -78,18 +78,18 @@ GuildDKP            SOTA /command       SOTA !command       SOTA /w command     
 /dkp                /SOTA dkp [player]  -                   /w <o> dkp [<p>]    Current DKP status for player
 /classdkp           /SOTA class [class] -                   /w <o> class [<c>]  Current DKP status for class (gdclass)
 
-/gdplus <n> <p>     /SOTA +<n> <p>      -                   -                   Add <n> DKP to player <p>
-/gdminus <n> <p>    /SOTA -<n> <p>      -                   -                   Subtract <n> DKP from player <p>
-/gdminuspct <n> <p> /SOTA [-]<n>% <p>   -                   -                   Subtract <n>% DKP from player (+<n>% does not exist)
+/gdplus <n> <p>     /SOTA +<n> <t1|t2> <p>      -                   -                   Add <n> DKP to player <p>
+/gdminus <n> <p>    /SOTA -<n> <t1|t2> <p>      -                   -                   Subtract <n> DKP from player <p>
+/gdminuspct <n> <p> /SOTA [-]<n>% <t1|t2> <p>   -                   -                   Subtract <n>% DKP from player (+<n>% does not exist)
 
-/addraid <n>        /SOTA raid +<n>     -                   -                   Add <n> DKP to all players in raid (SOTA: and queue)
-/subtractraid <n>   /SOTA raid -<n>     -                   -                   Subtract <n> DKP from players in raid (SOTA: and queue)
-/addrange <n>       /SOTA range [+]<n>  -                   -                   Add <n> DKP to all players in range (SOTA: and queue)
-/shareraid <n>      /SOTA share [+]<n>  -                   -                   Share <n> DKP across all members in raid (SOTA: and queue)
-/sharerange <n>     /SOTA sharerange [+]<n>                 -                   Share <n> DKP across all members in range (SOTA: and queue)
--                   /SOTA rangeshare [+]<n>                 -                   sharerange and rangeshare (and the alias SR) do the same.
-/gddecay <n>        /SOTA decay <n>[%]  -                   -                   Remove <n>% DKP from all guild members
--                   /SOTA decaytest     -                   -                   Test if DECAY operation will work (check for odd characters)
+/addraid <n>        /SOTA raid +<n> <t1|t2>     -                   -                   Add <n> DKP to all players in raid (SOTA: and queue)
+/subtractraid <n>   /SOTA raid -<n> <t1|t2>     -                   -                   Subtract <n> DKP from players in raid (SOTA: and queue)
+/addrange <n>       /SOTA range [+]<n> <t1|t2>  -                   -                   Add <n> DKP to all players in range (SOTA: and queue)
+/shareraid <n>      /SOTA share [+]<n> <t1|t2>  -                   -                   Share <n> DKP across all members in raid (SOTA: and queue)
+/sharerange <n>     /SOTA sharerange [+]<n> <t1|t2>            -                   Share <n> DKP across all members in range (SOTA: and queue)
+-                   /SOTA rangeshare [+]<n> <t1|t2>            -                   sharerange and rangeshare (and the alias SR) do the same.
+/gddecay <n>        /SOTA decay <n>[%] <t1|t2>  -                   -                   Remove <n>% DKP from all guild members
+-                   /SOTA decaytest <n>[%] <t1|t2>     -                   -                   Test if DECAY operation will work (check for odd characters)
 
 -                   /SOTA listqueue     !listqueue          /w <o> listqueue    List names of people in queue (by whisper or local if user have SOTA installed)
 -                   /SOTA queue         !queue              /w <o> queue        Get queue status
@@ -120,6 +120,88 @@ GuildDKP            SOTA /command       SOTA !command       SOTA /w command     
 SLASH_SOTA_DEFAULT_COMMAND1 = "/SOTA"
 SlashCmdList["SOTA_DEFAULT_COMMAND"] = function(msg)
 	SOTA_HandleSOTACommand(msg);
+end
+
+local function SOTA_Trim(value)
+	if not value then
+		return "";
+	end
+	value = string.gsub(value, "^%s+", "");
+	value = string.gsub(value, "%s+$", "");
+	return value;
+end
+
+local function SOTA_NormalizeTierToken(token)
+	if not token then
+		return nil;
+	end
+	token = string.lower(token);
+	if token == "t1" then
+		return 1;
+	end
+	if token == "t2" then
+		return 2;
+	end
+	return nil;
+end
+
+local function SOTA_ParseTierAndPlayer(arg)
+	if not arg then
+		return nil, nil;
+	end
+	arg = SOTA_Trim(arg);
+	if arg == "" then
+		return nil, nil;
+	end
+
+	local first, rest = string.match(arg, "^(%S+)%s+(.+)$");
+	if not first then
+		return nil, nil;
+	end
+
+	local tier = SOTA_NormalizeTierToken(first);
+	if tier then
+		return tier, SOTA_Trim(rest);
+	end
+
+	local head, last = string.match(arg, "^(.*)%s+(%S+)$");
+	if not head then
+		return nil, nil;
+	end
+
+	tier = SOTA_NormalizeTierToken(last);
+	if tier then
+		return tier, SOTA_Trim(head);
+	end
+
+	return nil, nil;
+end
+
+local function SOTA_ParseTierAndValue(arg)
+	if not arg then
+		return nil, nil;
+	end
+	arg = SOTA_Trim(arg);
+	if arg == "" then
+		return nil, nil;
+	end
+
+	local first, second = string.match(arg, "^(%S+)%s+(%S+)$");
+	if not first then
+		return nil, nil;
+	end
+
+	local tier = SOTA_NormalizeTierToken(first);
+	if tier then
+		return second, tier;
+	end
+
+	tier = SOTA_NormalizeTierToken(second);
+	if tier then
+		return first, tier;
+	end
+
+	return nil, nil;
 end
 
 
@@ -277,17 +359,24 @@ function SOTA_HandleSOTACommand(msg)
 	
 	
 	if cmd == "raid" then
-		sign = string.sub(arg, 1, 1);
+		local value, tier = SOTA_ParseTierAndValue(arg);
+		if not tier then
+			localEcho("Usage: /sota raid +<dkp> <t1|t2>");
+			return;
+		end
+
+		value = "" .. value;
+		sign = string.sub(value, 1, 1);
 		--	Command: raid
-		--	Syntax: "raid -<%d>"
+		--	Syntax: "raid -<%d> <t1|t2>"
 		if sign == "-" then
-			arg = string.sub(arg, 2);
-			return SOTA_Call_SubtractRaidDKP(arg);
+			value = string.sub(value, 2);
+			return SOTA_Call_SubtractRaidDKP(value, tier);
 		--	Command: raid
-		--	Syntax: "raid +<%d>"
+		--	Syntax: "raid +<%d> <t1|t2>"
 		elseif sign == "+" then
-			arg = string.sub(arg, 2);
-			return SOTA_Call_AddRaidDKP(arg);
+			value = string.sub(value, 2);
+			return SOTA_Call_AddRaidDKP(value, tier);
 		else
 			localEcho("DKP must be written as +999 or -999");
 			return;
@@ -295,69 +384,105 @@ function SOTA_HandleSOTACommand(msg)
 	end
 
 	if cmd == "range" then
-		sign = string.sub(arg, 1, 1);
+		local value, tier = SOTA_ParseTierAndValue(arg);
+		if not tier then
+			localEcho("Usage: /sota range +<dkp> <t1|t2>");
+			return;
+		end
+
+		value = "" .. value;
+		sign = string.sub(value, 1, 1);
 		--	Command: range
-		--	Syntax: "range [+]<%d>"
+		--	Syntax: "range [+]<%d> <t1|t2>"
 		--	Plus is optional (default)
 		if sign == "+" then
-			arg = string.sub(arg, 2);
+			value = string.sub(value, 2);
+		elseif sign == "-" then
+			localEcho("DKP must be written as +999");
+			return;
 		end
-		return SOTA_Call_AddRangedDKP(arg);
+		return SOTA_Call_AddRangedDKP(value, tier);
 	end
 
 	if cmd == "share" then
 		--	Command: share
-		--	Syntax: "share [[+]<%d>]"
+		--	Syntax: "share [[+]<%d>] <t1|t2>"
 		--	Parameter is optional; if omitted, current Boss DKP will be shared.
 		--	Plus is optional (default, undocumented)
-		if not arg or arg == "" then
-			arg = SOTA_GetMinimumBid() * 10;
-			if arg == 0 then
+		local argTrim = SOTA_Trim(arg);
+		local value, tier = SOTA_ParseTierAndValue(argTrim);
+		if not tier then
+			tier = SOTA_NormalizeTierToken(argTrim);
+			if not tier then
+				localEcho("Usage: /sota share [<dkp>] <t1|t2>");
+				return;
+			end
+			value = SOTA_GetMinimumBid() * 10;
+			if value == 0 then
 				localEcho("Boss DKP value could not be calculated - DKP was not shared.");
 				return;
 			end
-		else
-			sign = string.sub(arg, 1, 1);
-			if sign == "+" then
-				arg = string.sub(arg, 2);
-			end
 		end
-		return SOTA_Call_ShareDKP(arg);
+
+		value = "" .. value;
+		sign = string.sub(value, 1, 1);
+		if sign == "+" then
+			value = string.sub(value, 2);
+		end
+		return SOTA_Call_ShareDKP(value, tier);
 	end	
 
 	if cmd == "sharerange" or
 	   cmd == "rangeshare" or
 	   cmd == "sr" then
 		--	Command: sharerange / rangeshare / sr
-		--	Syntax: "sharerange [[+]<%d>]"
+		--	Syntax: "sharerange [[+]<%d>] <t1|t2>"
 		--	Parameter is optional; if omitted, current Boss DKP will be shared.
 		--	Plus is optional (default, undocumented)
-		if not arg or arg == "" then
-			arg = SOTA_GetMinimumBid() * 10;
-			if arg == 0 then
+		local argTrim = SOTA_Trim(arg);
+		local value, tier = SOTA_ParseTierAndValue(argTrim);
+		if not tier then
+			tier = SOTA_NormalizeTierToken(argTrim);
+			if not tier then
+				localEcho("Usage: /sota sharerange [<dkp>] <t1|t2>");
+				return;
+			end
+			value = SOTA_GetMinimumBid() * 10;
+			if value == 0 then
 				localEcho("Boss DKP value could not be calculated - DKP was not shared.");
 				return;
 			end
-		else
-			sign = string.sub(arg, 1, 1);
-			if sign == "+" then
-				arg = string.sub(arg, 2);
-			end
 		end
-		return SOTA_Call_ShareRangedDKP(arg);
+
+		value = "" .. value;
+		sign = string.sub(value, 1, 1);
+		if sign == "+" then
+			value = string.sub(value, 2);
+		end
+		return SOTA_Call_ShareRangedDKP(value, tier);
 	end	
 
 	--	Command: decay
 	--	Syntax: "decay <%d>[%]"
 	if cmd == "decay" then
-		return SOTA_Call_DecayDKP(arg);		
+		local value, tier = SOTA_ParseTierAndValue(arg);
+		if not tier then
+			localEcho("Usage: /sota decay <pct>% <t1|t2>");
+			return;
+		end
+		return SOTA_Call_DecayDKP(value, tier);		
 	end
 
 
 	--	Command: decaytest
 	--	Syntax: "decaytest <%d>[%]"
 	if cmd == "decaytest" then
-		return SOTA_Call_Decaytest(arg);		
+		local value, tier = SOTA_ParseTierAndValue(arg);
+		if not tier then
+			localEcho("Usage: /sota decaytest <pct>% <t1|t2>");
+			return;
+		end
+		return SOTA_Call_Decaytest(value, tier);		
 	end
 
 
@@ -369,23 +494,33 @@ function SOTA_HandleSOTACommand(msg)
 	--	Command: +
 	--	Syntax: "+<%d> <playername>"
 	if sign == "+" then
-		local cmd = string.sub(cmd, 2);
-		return SOTA_Call_AddPlayerDKP(arg, cmd);
+		local dkp = string.sub(cmd, 2);
+		local tier, player = SOTA_ParseTierAndPlayer(arg);
+		if not tier then
+			localEcho("Usage: /sota +<dkp> <t1|t2> <player>");
+			return;
+		end
+		return SOTA_Call_AddPlayerDKP(player, dkp, tier);
 	end
 	
 
 	if sign == "-" then
 		cmd = string.sub(cmd, 2);		
 		local percent = string.sub(cmd, string.len(cmd), string.len(cmd));
+		local tier, player = SOTA_ParseTierAndPlayer(arg);
+		if not tier then
+			localEcho("Usage: /sota -<dkp> <t1|t2> <player>");
+			return;
+		end
 		if percent == "%" then
 			--	Command: -
 			--	Syntax: "-<%d>% <playername>" (note the percent in the end of the numeric value!)
 			cmd = string.sub(cmd, 1, string.len(cmd) - 1)
-			return SOTA_Call_SubtractPlayerDKPPercent(arg, cmd);
+			return SOTA_Call_SubtractPlayerDKPPercent(player, cmd, tier);
 		else
 			--	Command: -
 			--	Syntax: "-<%d> <playername>"
-			return SOTA_Call_SubtractPlayerDKP(arg, cmd);
+			return SOTA_Call_SubtractPlayerDKP(player, cmd, tier);
 		end
 	end
 	
@@ -403,17 +538,17 @@ function SOTA_DisplayHelp()
 	echo("");
 	--	Player DKP:
 	localEcho("Player DKP:");
-	echo("  +<dkp> <p>    Add <dkp> to the player <p>.");
-	echo("  -<dkp> <p>    Subtract <dkp> from the player <p>.");
-	echo("  -<pct>% <p>   Subtract <pct> % DKP from the player <p>. A minimum subtracted amount can be configured in the DKP options.");
+	echo("  +<dkp> <t1|t2> <p>    Add <dkp> to the player <p>.");
+	echo("  -<dkp> <t1|t2> <p>    Subtract <dkp> from the player <p>.");
+	echo("  -<pct>% <t1|t2> <p>   Subtract <pct> % DKP from the player <p>. A minimum subtracted amount can be configured in the DKP options.");
 	echo("");
 	--	Raid DKP:
 	localEcho("Raid DKP:");
-	echo("  raid +<dkp>    Add <dkp> to all players in raid and in raid queue.");
-	echo("  raid -<dkp>    Subtract <dkp> from all players in raid and in raid queue.");
-	echo("  range +<dkp>    Add <dkp> to all players in 100 yards range.");
-	echo("  share +<dkp>    Share <dkp> to all players in raid and in raid queue. Every player gets (<dkp> / <number of players in raid>) DKP.");
-	echo("  decay <pct>%    Remove <pct> percent DKP from every player in the guild.");
+	echo("  raid +<dkp> <t1|t2>    Add <dkp> to all players in raid and in raid queue.");
+	echo("  raid -<dkp> <t1|t2>    Subtract <dkp> from all players in raid and in raid queue.");
+	echo("  range +<dkp> <t1|t2>    Add <dkp> to all players in 100 yards range.");
+	echo("  share [<dkp>] <t1|t2>    Share <dkp> to all players in raid and in raid queue. Every player gets (<dkp> / <number of players in raid>) DKP.");
+	echo("  decay <pct>% <t1|t2>    Remove <pct> percent DKP from every player in the guild.");
 	echo("");
 	--	Queue options:
 	localEcho("Raid Queue:");
@@ -541,8 +676,8 @@ end
 --
 --	Job Control
 --
-function SOTA_AddJob( method, arg1, arg2 )
-	JobQueue[table.getn(JobQueue) + 1] = { method, arg1, arg2 }
+function SOTA_AddJob(method, ...)
+	JobQueue[table.getn(JobQueue) + 1] = { method, ... }
 end
 
 function SOTA_GetNextJob()
@@ -1367,4 +1502,3 @@ function SOTA_OnLoad()
 
 	SOTA_InitializeTextElements();
 end
-

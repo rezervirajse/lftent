@@ -1102,7 +1102,7 @@ function SOTA_Call_ShareDKP(dkp, tier)
 	if SOTA_IsInRaid(true) then
 		RaidState = RAID_STATE_ENABLED;
 		SOTA_RequestMaster();
-		SOTA_AddJob( function(job) SOTA_ShareDKP(job[2], job[3]) end, dkp, tier, "_");
+		SOTA_AddJob( function(job) SOTA_ShareDKP(job[2], job[3]) end, dkp, tier );
 		SOTA_RequestUpdateGuildRoster();
 	end
 end
@@ -1145,7 +1145,7 @@ function SOTA_Call_ShareRangedDKP(dkp, tier)
 	if SOTA_IsInRaid(true) then
 		RaidState = RAID_STATE_ENABLED;
 		SOTA_RequestMaster();
-		SOTA_AddJob( function(job) SOTA_ShareRangedDKP(job[2], job[3]) end, dkp, tier, "_");
+		SOTA_AddJob( function(job) SOTA_ShareRangedDKP(job[2], job[3]) end, dkp, tier );
 		SOTA_RequestUpdateGuildRoster();
 	end
 end
@@ -1177,11 +1177,14 @@ end
 --	Perform a DKP decay without really removing DKP. Result is echoed out locally.
 --	Added in 1.1.0
 --]]
-function SOTA_Call_Decaytest(percent)
-	SOTA_AddJob( function(job) SOTA_Decaytest(job[2]) end, percent, "_" )
+function SOTA_Call_Decaytest(percent, tier)
+	SOTA_AddJob( function(job) SOTA_Decaytest(job[2], nil, job[3]) end, percent, tier )
 	SOTA_RequestUpdateGuildRoster();
 end
-function SOTA_Decaytest(percent, silentmode)
+function SOTA_Decaytest(percent, silentmode, tier)
+	if tier ~= 1 and tier ~= 2 then
+		tier = 1;
+	end
 	--	Note: arg may contain a percent sign; remove this first:
 	if not tonumber(percent) then
 		local pctSign = string.sub(percent, string.len(percent), string.len(percent));
@@ -1212,21 +1215,34 @@ function SOTA_Decaytest(percent, silentmode)
 		if SOTA_CONFIG_UseGuildNotes == 1 then
 			note = publicNote;
 		end
+		if not note then
+			note = "";
+		end
 
-		local _, _, dkp = string.find(note, "%[(%d+):(%d+)%]");
-		if dkp and tonumber(dkp) then
+		local hasTier = string.find(note, "%[%-?%d+:%-?%d+%]") or string.find(note, "<-?%d+>");
+		local t1, t2 = SOTA_ParseDkpTiers(note);
+		local dkp = t1;
+		if tier == 2 then
+			dkp = t2;
+		end
+
+		if hasTier then
 			local minus = floor(dkp * percent / 100)
 			tidChanges[tidIndex] = { name, (-1 * minus) }
 			tidIndex = tidIndex + 1
-			
+
 			dkp = dkp - minus;
 			reducedDkp = reducedDkp + minus;
 			playerCount = playerCount + 1;
-			note = string.gsub(note, "%[(%d+):(%d+)%]", SOTA_CreateDkpString(dkp), 1);
-		else
-			dkp = 0;
-			note = note..SOTA_CreateDkpString(dkp);
 		end
+
+		if tier == 1 then
+			t1 = dkp;
+		else
+			t2 = dkp;
+		end
+
+		note = SOTA_UpdateTierPointsInNote(note, t1, t2);
 	end
 	
 	localEcho("Testing Guild DKP decay using a "..percent.."% decay value.");
@@ -1240,11 +1256,14 @@ end
 --	Perform Guild Decay of <n>% DKP
 --	This function requires Show Offline Members to be enabled.
 --]]
-function SOTA_Call_DecayDKP(percent)
-	SOTA_AddJob( function(job) SOTA_DecayDKP(job[2]) end, percent, "_" )
+function SOTA_Call_DecayDKP(percent, tier)
+	SOTA_AddJob( function(job) SOTA_DecayDKP(job[2], nil, job[3]) end, percent, tier )
 	SOTA_RequestUpdateGuildRoster();
 end
-function SOTA_DecayDKP(percent, silentmode)
+function SOTA_DecayDKP(percent, silentmode, tier)
+	if tier ~= 1 and tier ~= 2 then
+		tier = 1;
+	end
 	--	Note: arg may contain a percent sign; remove this first:
 	if not tonumber(percent) then
 		local pctSign = string.sub(percent, string.len(percent), string.len(percent));
@@ -1286,21 +1305,34 @@ function SOTA_DecayDKP(percent, silentmode)
 		if SOTA_CONFIG_UseGuildNotes == 1 then
 			note = publicNote;
 		end
+		if not note then
+			note = "";
+		end
 
-		local _, _, dkp = string.find(note, "%[(%d+):(%d+)%]");
-		if dkp and tonumber(dkp) then
+		local hasTier = string.find(note, "%[%-?%d+:%-?%d+%]") or string.find(note, "<-?%d+>");
+		local t1, t2 = SOTA_ParseDkpTiers(note);
+		local dkp = t1;
+		if tier == 2 then
+			dkp = t2;
+		end
+
+		if hasTier then
 			local minus = floor(dkp * percent / 100)
 			tidChanges[tidIndex] = { name, (-1 * minus) }
 			tidIndex = tidIndex + 1
-			
+
 			dkp = dkp - minus;
 			reducedDkp = reducedDkp + minus;
 			playerCount = playerCount + 1;
-			note = string.gsub(note, "%[(%d+):(%d+)%]", SOTA_CreateDkpString(dkp), 1);
-		else
-			dkp = 0;
-			note = note..SOTA_CreateDkpString(dkp);
 		end
+
+		if tier == 1 then
+			t1 = dkp;
+		else
+			t2 = dkp;
+		end
+
+		note = SOTA_UpdateTierPointsInNote(note, t1, t2);
 		
 		if SOTA_CONFIG_UseGuildNotes == 1 then
 			GuildRosterSetPublicNote(n, note);
@@ -1308,7 +1340,7 @@ function SOTA_DecayDKP(percent, silentmode)
 			GuildRosterSetOfficerNote(n, note);
 		end
 		
-		SOTA_UpdateLocalDKP(name, dkp);
+		SOTA_UpdateLocalTierPoints(name, t1, t2);
 	end
 	
 	if not silentmode then
@@ -1457,8 +1489,11 @@ end
 --[[
 --	Generic function to add(or remove) DKP from a player.
 --]]
-function SOTA_ApplyPlayerDKP(playername, dkpValue, silentmode)
+function SOTA_ApplyPlayerDKP(playername, dkpValue, silentmode, tier)
 	dkpValue = 1 * dkpValue;
+	if tier ~= 1 and tier ~= 2 then
+		tier = 1;
+	end
 	
 	playername = SOTA_UCFirst(playername);
 	
@@ -1471,15 +1506,13 @@ function SOTA_ApplyPlayerDKP(playername, dkpValue, silentmode)
 				note = publicNote;
 			end
 		
-			local _, _, dkp = string.find(note, "%[(%d+):(%d+)%]");
-
-			if dkp and tonumber(dkp)  then
-				dkp = (1 * dkp) + dkpValue;
-				note = string.gsub(note, "%[(%d+):(%d+)%]", SOTA_CreateDkpString(dkp), 1);
+			local t1, t2 = SOTA_ParseDkpTiers(note);
+			if tier == 1 then
+				t1 = t1 + dkpValue;
 			else
-				dkp = dkpValue;
-				note = note..SOTA_CreateDkpString(dkp);
+				t2 = t2 + dkpValue;
 			end
+			note = SOTA_UpdateTierPointsInNote(note, t1, t2);
 			
 			if SOTA_CONFIG_UseGuildNotes == 1 then
 				GuildRosterSetPublicNote(n, note);
@@ -1487,7 +1520,7 @@ function SOTA_ApplyPlayerDKP(playername, dkpValue, silentmode)
 				GuildRosterSetOfficerNote(n, note);
 			end
 			
-			SOTA_UpdateLocalDKP(name, dkp);			
+			SOTA_UpdateLocalTierPoints(name, t1, t2);			
 			return true;
 		end
    	end
@@ -1637,6 +1670,7 @@ function SOTA_UpdateLocalTierPoints(playername, t1, t2)
 		if raidRoster[n][1] == playername then
 			raidRoster[n][8] = t1;
 			raidRoster[n][9] = t2;
+			raidRoster[n][2] = (t1 or 0) + (t2 or 0);
 			return;
 		end
 	end
