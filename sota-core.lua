@@ -624,13 +624,14 @@ function SOTA_Call_CheckPlayerDKP(playername, sender)
 		playername = UnitName("player");
 	end		
 
-	local dkp = SOTA_GetDKP(playername);
-	if dkp then
-		dkp = 1 * dkp;
+	local playerInfo = SOTA_GetGuildPlayerInfo(playername);
+	if playerInfo then
+		local t1 = 1 * (playerInfo[8] or 0);
+		local t2 = 1 * (playerInfo[9] or 0);
 		if sender then
-			SOTA_whisper(sender, string.format("%s have %d DKP.", playername, dkp));
+			SOTA_whisper(sender, string.format("%s have T1 %d DKP and T2 %d DKP.", playername, t1, t2));
 		else
-			localEcho(string.format("%s have %d DKP.", playername, dkp));
+			localEcho(string.format("%s have T1 %d DKP and T2 %d DKP.", playername, t1, t2));
 		end
 	else
 		if sender then
