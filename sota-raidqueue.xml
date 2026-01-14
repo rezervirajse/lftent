@@ -101,6 +101,63 @@
 		<NormalTexture name="$parentBG" />
 	</Button>
 
+	<!-- template for a Player entry in the Raid DKP list -->
+	<Button name="SOTA_RaidDKPTemplate" hidden="true" virtual="true">
+		<Size>
+			<AbsDimension x="300" y="16"/>
+		</Size>
+		<Layers>
+			<Layer>
+				<!-- Player name -->
+				<FontString name="$parentName" justifyH="LEFT" inherits="GameFontNormal">
+					<Size>
+						<AbsDimension x="160" y="16"/>
+					</Size>
+					<Anchors>
+						<Anchor point="LEFT">
+							<Offset>
+								<AbsDimension x="4" y="0"/>
+							</Offset>
+						</Anchor>
+					</Anchors>
+					<Color r="1" g="1" b="1" />
+				</FontString>
+				<!-- T1 DKP -->
+				<FontString name="$parentT1" justifyH="RIGHT" inherits="GameFontNormal">
+					<Size>
+						<AbsDimension x="60" y="16"/>
+					</Size>
+					<Anchors>
+						<Anchor point="LEFT" relativePoint="RIGHT" relativeTo="$parentName"/>
+					</Anchors>
+				</FontString>
+				<!-- T2 DKP -->
+				<FontString name="$parentT2" justifyH="RIGHT" inherits="GameFontNormal">
+					<Size>
+						<AbsDimension x="60" y="16"/>
+					</Size>
+					<Anchors>
+						<Anchor point="LEFT" relativePoint="RIGHT" relativeTo="$parentT1"/>
+					</Anchors>
+				</FontString>
+			</Layer>
+		</Layers>
+		<Scripts>
+			<OnEnter>
+				getglobal(this:GetName().."BG"):SetVertexColor(1, 1, 1, 0.15)
+			</OnEnter>
+			<OnLeave>
+				getglobal(this:GetName().."BG"):SetVertexColor(0, 0, 0, 0)
+			</OnLeave>
+			<OnLoad>
+				this:GetScript("OnLeave")(this)
+			</OnLoad>
+		</Scripts>
+		<NormalTexture name="$parentBG">
+			<Color r="0.0" g="0.0" b="0.0" a="0.0"/>
+		</NormalTexture>
+	</Button>
+
 	<!--	Raid Queue Frame	-->
 	<Frame name="RaidQueueFrame" inherits="SOTABigFrame">
 		<Layers>
@@ -334,6 +391,96 @@
 				<Scripts>
 					<OnClick>
 						SOTA_CloseRaidAttendanceUI();
+					</OnClick>
+				</Scripts>
+			</Button>
+		</Frames>
+	</Frame>
+
+	<!--	Raid DKP Frame	-->
+	<Frame name="RaidDKPFrame" inherits="SOTABigFrame">
+		<Size>
+			<AbsDimension x="360" y="420" />
+		</Size>
+		<Anchors>
+			<Anchor point="TOPLEFT">
+				<Offset x="312" y="-118" />
+			</Anchor>
+		</Anchors>
+		<Layers>
+			<Layer>
+				<FontString name="$parentTitle" inherits="GameFontNormal" text="Raid DKP">
+					<Anchors>
+						<Anchor point="CENTER">
+							<Offset>
+								<AbsDimension x="-6" y="185"/>
+							</Offset>
+						</Anchor>
+					</Anchors>
+				</FontString>
+				<FontString name="$parentNameHeader" inherits="GameFontNormal" text="Player">
+					<Anchors>
+						<Anchor point="TOPLEFT" relativeTo="$parentTableList" relativePoint="TOPLEFT">
+							<Offset x="12" y="14" />
+						</Anchor>
+					</Anchors>
+				</FontString>
+				<FontString name="$parentT1Header" inherits="GameFontNormal" text="T1">
+					<Anchors>
+						<Anchor point="TOPLEFT" relativeTo="$parentTableList" relativePoint="TOPLEFT">
+							<Offset x="200" y="14" />
+						</Anchor>
+					</Anchors>
+				</FontString>
+				<FontString name="$parentT2Header" inherits="GameFontNormal" text="T2">
+					<Anchors>
+						<Anchor point="TOPLEFT" relativeTo="$parentTableList" relativePoint="TOPLEFT">
+							<Offset x="260" y="14" />
+						</Anchor>
+					</Anchors>
+				</FontString>
+			</Layer>
+		</Layers>
+		<Frames>
+			<!-- DKP list frame -->
+			<ScrollFrame name="$parentTableList" inherits="FauxScrollFrameTemplate">
+				<Size>
+					<AbsDimension x="320" y="320" />
+				</Size>
+				<Anchors>
+					<Anchor point="TOPLEFT">
+						<Offset>
+							<AbsDimension x="16" y="-60" />
+						</Offset>
+					</Anchor>
+				</Anchors>
+				<Backdrop edgeFile="Interface\Tooltips\UI-Tooltip-Border" tile="true">
+					<EdgeSize>
+						<AbsValue val="16"/>
+					</EdgeSize>
+					<TileSize>
+						<AbsValue val="16"/>
+					</TileSize>
+				</Backdrop>
+				<Scripts>
+					<OnVerticalScroll>
+						FauxScrollFrame_OnVerticalScroll(16, SOTA_UpdateRaidDKPList);
+					</OnVerticalScroll>
+					<OnShow>
+						SOTA_UpdateRaidDKPList();
+					</OnShow>
+				</Scripts>
+			</ScrollFrame>
+			<!-- Top right corner close button -->
+			<Button name="$parentTopCloseButton" inherits="UIPanelCloseButton">
+				<Anchors>
+					<Anchor point="TOPLEFT">
+						<Offset x="320" y="-9" />
+					</Anchor>
+				</Anchors>
+				<Scripts>
+					<OnClick>
+						SOTA_CloseRaidDKPUI();
 					</OnClick>
 				</Scripts>
 			</Button>

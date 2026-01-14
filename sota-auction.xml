@@ -304,6 +304,19 @@
 					<OnClick>SOTA_OnAcceptBidClick();</OnClick>
 				</Scripts>
 			</Button>
+			<Button name="RaidDKPButton" inherits="UIPanelButtonTemplate" text="Raid DKP">
+				<Size>
+					<AbsDimension x="120" y="23" />
+				</Size>
+				<Anchors>
+					<Anchor point="TOPLEFT">
+						<Offset x="170" y="-400" />
+					</Anchor>
+				</Anchors>
+				<Scripts>
+					<OnClick>SOTA_OpenRaidDKPUI();</OnClick>
+				</Scripts>
+			</Button>
 			<Button name="CancelAuctionButton" inherits="UIPanelButtonTemplate" text="Cancel Auction">
 				<Size>
 					<AbsDimension x="120" y="23" />

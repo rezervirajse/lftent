@@ -225,6 +225,74 @@ function SOTA_RefreshRaidQueue(role)
 end
 
 
+function SOTA_GetRaidDKPList()
+	local raidRoster = SOTA_GetRaidRoster();
+	local list = { };
+
+	for n=1, table.getn(raidRoster), 1 do
+		local info = raidRoster[n];
+		local name = info[1];
+		if name and name ~= "" then
+			local class = info[3];
+			local t1 = 1 * (info[8] or 0);
+			local t2 = 1 * (info[9] or 0);
+			list[table.getn(list) + 1] = { name, class, t1, t2 };
+		end
+	end
+
+	table.sort(list, function(a, b)
+		return string.lower(a[1]) < string.lower(b[1]);
+	end);
+
+	return list;
+end
+
+function SOTA_UpdateRaidDKPList()
+	if not RaidDKPUIOpen then
+		return;
+	end
+
+	local list = SOTA_GetRaidDKPList();
+	FauxScrollFrame_Update(RaidDKPFrameTableList, table.getn(list), MAX_RAID_DKP_ROWS, RAID_DKP_ROW_HEIGHT);
+	local offset = FauxScrollFrame_GetOffset(RaidDKPFrameTableList);
+
+	for n=1, MAX_RAID_DKP_ROWS, 1 do
+		local entry = list[n + offset];
+		local frame = getglobal("RaidDKPFrameTableListEntry"..n);
+		if frame then
+			if entry then
+				local name = entry[1];
+				local class = entry[2];
+				local t1 = entry[3];
+				local t2 = entry[4];
+				local color = SOTA_GetClassColorCodes(class);
+
+				getglobal(frame:GetName().."Name"):SetText(name);
+				getglobal(frame:GetName().."Name"):SetTextColor((color[1]/255), (color[2]/255), (color[3]/255), 255);
+				getglobal(frame:GetName().."T1"):SetText(t1);
+				getglobal(frame:GetName().."T2"):SetText(t2);
+			else
+				getglobal(frame:GetName().."Name"):SetText("");
+				getglobal(frame:GetName().."T1"):SetText("");
+				getglobal(frame:GetName().."T2"):SetText("");
+			end
+			frame:Show();
+		end
+	end
+
+	if RaidDKPFrameTitle then
+		RaidDKPFrameTitle:SetText("Raid DKP ("..table.getn(list)..")");
+	end
+end
+
+function SOTA_RefreshRaidDKPList()
+	if not RaidDKPUIOpen then
+		return;
+	end
+
+	SOTA_UpdateRaidDKPList();
+end
+
 function SOTA_UpdateRaidQueueTable(caption, framename, sourcetable)
 	local headColor		= { 240, 240, 240 };
 	local textColor		= { 240, 200, 40 }

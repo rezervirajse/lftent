@@ -440,6 +440,7 @@ function SOTA_OnGuildRosterUpdate()
 	
 	SOTA_RefreshRaidQueue();
 	SOTA_RefreshLogElements();
+	SOTA_RefreshRaidDKPList();
 end
 
 
@@ -573,6 +574,7 @@ function SOTA_OnRaidRosterUpdate(event, arg1, arg2, arg3, arg4, arg5)
 
 	SOTA_RefreshRaidQueue();
 	SOTA_RefreshLogElements();
+	SOTA_RefreshRaidDKPList();
 	
 	if SOTA_IsInRaid(true) then
 		SOTA_Synchronize();

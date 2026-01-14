@@ -1347,6 +1347,7 @@ function SOTA_InitializeUI()
 	SOTA_AuctionUIInit();
 	SOTA_RaidQueueUIInit()
 	SOTA_RaidAttendanceUIInit()
+	SOTA_RaidDKPUIInit();
 	SOTA_TransactionLogUIInit();
 end
 
