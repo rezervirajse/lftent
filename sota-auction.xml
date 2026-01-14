@@ -31,13 +31,22 @@
 						<Anchor point="LEFT" relativePoint="RIGHT" relativeTo="$parentBidder" />
 					</Anchors>
 				</FontString>
-				<!-- Guild rank -->
-				<FontString name="$parentRank" justifyH="LEFT" inherits="GameFontNormal">
+				<!-- Bid type -->
+				<FontString name="$parentType" justifyH="LEFT" inherits="GameFontNormal">
 					<Size>
-						<AbsDimension x="220" y="16" />
+						<AbsDimension x="40" y="16" />
 					</Size>
 					<Anchors>
 						<Anchor point="LEFT" relativePoint="RIGHT" relativeTo="$parentBid" />
+					</Anchors>
+				</FontString>
+				<!-- Guild rank -->
+				<FontString name="$parentRank" justifyH="LEFT" inherits="GameFontNormal">
+					<Size>
+						<AbsDimension x="180" y="16" />
+					</Size>
+					<Anchors>
+						<Anchor point="LEFT" relativePoint="RIGHT" relativeTo="$parentType" />
 					</Anchors>
 				</FontString>
 			</Layer>
@@ -207,13 +216,22 @@
 								<Anchor point="LEFT" relativePoint="RIGHT" relativeTo="$parentBidder" />
 							</Anchors>
 						</FontString>
-						<!-- Selected Rank -->
-						<FontString name="$parentRank" justifyH="LEFT" inherits="GameFontNormal" text="">
+						<!-- Selected bid type -->
+						<FontString name="$parentType" justifyH="LEFT" inherits="GameFontNormal" text="">
 							<Size>
-								<AbsDimension x="220" y="16" />
+								<AbsDimension x="40" y="16" />
 							</Size>
 							<Anchors>
 								<Anchor point="LEFT" relativePoint="RIGHT" relativeTo="$parentBid" />
+							</Anchors>
+						</FontString>
+						<!-- Selected Rank -->
+						<FontString name="$parentRank" justifyH="LEFT" inherits="GameFontNormal" text="">
+							<Size>
+								<AbsDimension x="180" y="16" />
+							</Size>
+							<Anchors>
+								<Anchor point="LEFT" relativePoint="RIGHT" relativeTo="$parentType" />
 							</Anchors>
 						</FontString>
 					</Layer>

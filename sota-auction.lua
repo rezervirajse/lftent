@@ -37,6 +37,34 @@ local function SOTA_AuctionWhisper(receiver, msg)
 	SOTA_whisper(receiver, msg);
 end
 
+local function SOTA_GetTierFromZone(zoneName)
+	if not zoneName or zoneName == "" then
+		return nil, nil;
+	end
+	if not SOTA_RULES or not SOTA_RULES.raid_tier_by_name then
+		return nil, nil;
+	end
+	local tierName = SOTA_RULES.raid_tier_by_name[zoneName];
+	if tierName == "T1" then
+		return 1, "T1";
+	end
+	if tierName == "T2" then
+		return 2, "T2";
+	end
+	return nil, nil;
+end
+
+local function SOTA_GetBidTier(playerInfo)
+	local tier, tierLabel = nil, nil;
+	if playerInfo then
+		tier, tierLabel = SOTA_GetTierFromZone(playerInfo[6]);
+	end
+	if not tier then
+		tier, tierLabel = SOTA_GetTierFromZone(GetRealZoneText());
+	end
+	return tier, tierLabel;
+end
+
 
 function SOTA_GetSecondCounter()
 	return Seconds;
@@ -244,7 +272,15 @@ function SOTA_HandlePlayerBid(sender, message)
 		return;
 	end
 
-	local availableDkp = 1 * (playerInfo[2]);
+	local raidTier, raidTierLabel = SOTA_GetBidTier(playerInfo);
+	local availableDkp = 0;
+	if raidTier == 1 then
+		availableDkp = 1 * (playerInfo[8] or 0);
+	elseif raidTier == 2 then
+		availableDkp = 1 * (playerInfo[9] or 0);
+	else
+		availableDkp = 1 * (playerInfo[2] or 0);
+	end
 	
 	local cmd, arg
 	local spacepos = string.find(message, "%s");
@@ -301,17 +337,39 @@ function SOTA_HandlePlayerBid(sender, message)
 	end
 	
 
-	SOTA_RegisterBid(sender, dkp, bidtype, bidderClass, bidderRank, bidderRIdx);
+	SOTA_RegisterBid(sender, dkp, bidtype, bidderClass, bidderRank, bidderRIdx, raidTier, raidTierLabel);
 		
 end
 
 
 
-function SOTA_RegisterBid(playername, bid, bidtype, playerclass, rankname, rankindex)
+function SOTA_RegisterBid(playername, bid, bidtype, playerclass, rankname, rankindex, raidTier, raidTierLabel)
+	if not raidTier then
+		local playerInfo = SOTA_GetGuildPlayerInfo(playername);
+		raidTier, raidTierLabel = SOTA_GetBidTier(playerInfo);
+	end
+	if not raidTierLabel then
+		if raidTier == 1 then
+			raidTierLabel = "T1";
+		elseif raidTier == 2 then
+			raidTierLabel = "T2";
+		end
+	end
+
+	local playerDkp = SOTA_GetDKP(playername, raidTier);
+	if not playerDkp then
+		playerDkp = 0;
+	end
+
+	local bidLabel = "Your bid";
 	if bidtype == 2 then
-		SOTA_AuctionWhisper(playername, string.format("Your Off-spec bid of %d DKP has been registered.", bid) );
+		bidLabel = "Your Off-spec bid";
+	end
+
+	if raidTierLabel then
+		SOTA_AuctionWhisper(playername, string.format("%s of %d %s DKP has been registered. You have %d %s DKP.", bidLabel, bid, raidTierLabel, playerDkp, raidTierLabel));
 	else
-		SOTA_AuctionWhisper(playername, string.format("Your bid of %d DKP has been registered.", bid) );
+		SOTA_AuctionWhisper(playername, string.format("%s of %d DKP has been registered. You have %d DKP.", bidLabel, bid, playerDkp));
 	end
 
 	IncomingBidsTable = SOTA_RenumberTable(IncomingBidsTable);
@@ -468,22 +526,31 @@ end;
 --	Show top <n> in bid window
 --]]
 function SOTA_UpdateBidElements()
-	local bidder, bid, playerclass, rank;
+	local bidder, bid, bidtype, bidtypeText, playerclass, rank;
 	for n=1, MAX_BIDS, 1 do
 		if table.getn(IncomingBidsTable) < n then
 			bidder = "";
 			bid = "";
+			bidtypeText = "";
 			bidcolor = { 64, 255, 64 };
 			playerclass = "";
 			rank = "";
 		else
 			local cbid = IncomingBidsTable[n];
 			bidder = cbid[1];
+			bidtype = cbid[3];
 			bidcolor = { 64, 255, 64 };
-			if cbid[3] == 2 then
+			if bidtype == 2 then
 				bidcolor = { 255, 255, 96 };
 			end
 			bid = string.format("%d", cbid[2]);
+			if bidtype == 2 then
+				bidtypeText = "OS";
+			elseif bidtype == 1 then
+				bidtypeText = "MS";
+			else
+				bidtypeText = "";
+			end
 			playerclass = cbid[4];
 			rank = cbid[5];
 		end
@@ -495,6 +562,8 @@ function SOTA_UpdateBidElements()
 		getglobal(frame:GetName().."Bidder"):SetTextColor((color[1]/255), (color[2]/255), (color[3]/255), 255);
 		getglobal(frame:GetName().."Bid"):SetTextColor((bidcolor[1]/255), (bidcolor[2]/255), (bidcolor[3]/255), 255);
 		getglobal(frame:GetName().."Bid"):SetText(bid);
+		getglobal(frame:GetName().."Type"):SetTextColor((bidcolor[1]/255), (bidcolor[2]/255), (bidcolor[3]/255), 255);
+		getglobal(frame:GetName().."Type"):SetText(bidtypeText);
 		getglobal(frame:GetName().."Rank"):SetText(rank);
 
 		SOTA_RefreshButtonStates();
@@ -700,17 +769,26 @@ function SOTA_ShowSelectedPlayer(playername, bid)
 		bidInfo = SOTA_GetBidInfo(playername, bid);	
 	end
 	
-	local bidder, bid, playerclass, rank;
+	local bidder, bid, bidtype, bidtypeText, playerclass, rank;
 	if not bidInfo then
 		bidder = "";
 		bid = "";
+		bidtypeText = "";
 		playerclass = "";
 		rank = "";
 	else
 		bidder = bidInfo[1];
 		bid = string.format("%d", bidInfo[2]);
-		playerclass = bidInfo[3];
-		rank = bidInfo[4];
+		bidtype = bidInfo[3];
+		if bidtype == 2 then
+			bidtypeText = "OS";
+		elseif bidtype == 1 then
+			bidtypeText = "MS";
+		else
+			bidtypeText = "";
+		end
+		playerclass = bidInfo[4];
+		rank = bidInfo[5];
 	end
 	
 	local color = SOTA_GetClassColorCodes(playerclass);
@@ -719,6 +797,7 @@ function SOTA_ShowSelectedPlayer(playername, bid)
 	getglobal(frame:GetName().."Bidder"):SetText(bidder);
 	getglobal(frame:GetName().."Bidder"):SetTextColor((color[1]/255), (color[2]/255), (color[3]/255), 255);
 	getglobal(frame:GetName().."Bid"):SetText(bid);
+	getglobal(frame:GetName().."Type"):SetText(bidtypeText);
 	getglobal(frame:GetName().."Rank"):SetText(rank);
 
 	SOTA_RefreshButtonStates();
@@ -728,6 +807,7 @@ function SOTA_ClearSelectedPlayer()
 	local frame = getglobal("AuctionUIFrameSelected");
 	getglobal(frame:GetName().."Bidder"):SetText("");
 	getglobal(frame:GetName().."Bid"):SetText("");
+	getglobal(frame:GetName().."Type"):SetText("");
 	getglobal(frame:GetName().."Rank"):SetText("");
 end
 
@@ -787,4 +867,3 @@ function SOTA_OnBidClick(object)
 
 	SOTA_ShowSelectedPlayer(bidder, bid);
 end
-
