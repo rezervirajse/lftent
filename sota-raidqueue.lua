@@ -13,9 +13,14 @@ local QueueID					= 1;
 
 -- UI Status: True = Open, False = Closed - use to prevent update of UI elements when closed.
 local RaidQueueUIOpen			= false;
+SOTA_RaidAttendanceUIOpen		= false;
+local RaidDKPUIOpen			= false;
 
 -- Max # of characters displayes per role in the Raid Queue UI. A caption will be inserted in top.
 local MAX_RAID_QUEUE_SIZE		= 8;
+local MAX_RAID_ATTENDANCE_ROWS	= 16;
+local MAX_RAID_DKP_ROWS		= 20;
+local RAID_DKP_ROW_HEIGHT		= 16;
 
 
 
@@ -29,6 +34,31 @@ end
 function SOTA_CloseRaidQueueUI()
 	RaidQueueUIOpen = false;	
 	RaidQueueFrame:Hide();
+end
+
+function SOTA_OpenRaidDKPUI()
+	RaidDKPUIOpen = true;
+	SOTA_UpdateRaidDKPList();
+	RaidDKPFrame:Show();
+end
+
+function SOTA_CloseRaidDKPUI()
+	RaidDKPUIOpen = false;
+	RaidDKPFrame:Hide();
+end
+
+function SOTA_OpenRaidAttendanceUI()
+	SOTA_RaidAttendanceUIOpen = true;
+	if SOTA_UpdateRaidAttendance then
+		SOTA_UpdateRaidAttendance();
+	end
+	SOTA_RefreshRaidAttendance();
+	RaidAttendanceFrame:Show();
+end
+
+function SOTA_CloseRaidAttendanceUI()
+	SOTA_RaidAttendanceUIOpen = false;
+	RaidAttendanceFrame:Hide();
 end
 
 
@@ -61,6 +91,76 @@ function SOTA_RaidQueueUIInit()
 	end
 
 end;
+
+function SOTA_RaidDKPUIInit()
+	local entry = CreateFrame("Button", "$parentEntry1", RaidDKPFrameTableList, "SOTA_RaidDKPTemplate");
+	entry:SetID(1);
+	entry:SetPoint("TOPLEFT", 4, -4);
+	for n=2, MAX_RAID_DKP_ROWS, 1 do
+		entry = CreateFrame("Button", "$parentEntry"..n, RaidDKPFrameTableList, "SOTA_RaidDKPTemplate");
+		entry:SetID(n);
+		entry:SetPoint("TOP", "$parentEntry"..(n-1), "BOTTOM");
+	end
+end;
+
+function SOTA_RaidAttendanceUIInit()
+	local entry = CreateFrame("Button", "$parentEntry1", RaidAttendanceFrameList, "SOTA_PlayerTemplate");
+	entry:SetID(1);
+	entry:SetPoint("TOPLEFT", 4, -4);
+	entry:SetScript("OnClick", function() end);
+	for n=2, MAX_RAID_ATTENDANCE_ROWS, 1 do
+		entry = CreateFrame("Button", "$parentEntry"..n, RaidAttendanceFrameList, "SOTA_PlayerTemplate");
+		entry:SetID(n);
+		entry:SetPoint("TOP", "$parentEntry"..(n-1), "BOTTOM");
+		entry:SetScript("OnClick", function() end);
+	end
+end;
+
+local function SOTA_FormatAttendanceTime(seconds)
+	if not seconds or seconds < 0 then
+		seconds = 0;
+	end
+	local mins = floor(seconds / 60);
+	local secs = floor(seconds - (mins * 60));
+	return string.format("%02d:%02d", mins, secs);
+end
+
+function SOTA_RefreshRaidAttendance()
+	if not SOTA_RaidAttendanceUIOpen then
+		return;
+	end
+
+	local attendance = SOTA_GetRaidAttendanceList() or { };
+	FauxScrollFrame_Update(RaidAttendanceFrameList, table.getn(attendance), MAX_RAID_ATTENDANCE_ROWS, 16);
+	local offset = FauxScrollFrame_GetOffset(RaidAttendanceFrameList);
+
+	local startTick = SOTA_GetRaidAttendanceStartTick() or 0;
+	for n=1, MAX_RAID_ATTENDANCE_ROWS, 1 do
+		local row = attendance[n + offset];
+		local frame = getglobal("RaidAttendanceFrameListEntry"..n);
+		if row then
+			local playername = row[1];
+			local playerclass = row[2];
+			local joinTick = row[3] or 0;
+			local joinOrder = row[4] or "";
+
+			local color = SOTA_GetClassColorCodes(playerclass);
+			local joinText = SOTA_FormatAttendanceTime(joinTick - startTick);
+
+			getglobal(frame:GetName().."Name"):SetText(playername);
+			getglobal(frame:GetName().."Name"):SetTextColor((color[1]/255), (color[2]/255), (color[3]/255), 255);
+			getglobal(frame:GetName().."Zone"):SetText(joinText);
+			getglobal(frame:GetName().."Zone"):SetTextColor(1, 1, 1, 255);
+			getglobal(frame:GetName().."Rank"):SetText(joinOrder);
+			getglobal(frame:GetName().."Rank"):SetTextColor(1, 1, 1, 255);
+		else
+			getglobal(frame:GetName().."Name"):SetText("");
+			getglobal(frame:GetName().."Zone"):SetText("");
+			getglobal(frame:GetName().."Rank"):SetText("");
+		end
+		frame:Show();
+	end
+end
 
 
 --[[
@@ -649,4 +749,3 @@ function SOTA_OnQueuedPlayerClick(object, buttonname)
 		end;
 	end
 end
-

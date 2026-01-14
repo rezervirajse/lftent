@@ -287,6 +287,13 @@ function SOTA_HandleSOTACommand(msg)
 		return;
 	end
 
+	--	Command: attendance
+	--	Syntax: "attendance"
+	if cmd == "attendance" then
+		SOTA_OpenRaidAttendanceUI();
+		return;
+	end
+
 	--	Command: clearhistory
 	--	Syntax: "clear", "clearhistory"
 	if (cmd == "clear") or (cmd == "clearhistory") then
@@ -559,6 +566,7 @@ function SOTA_DisplayHelp()
 	localEcho("Miscellaneous:");
 	echo("  Config    Open the SotA configuration screen.");
 	echo("  Log    Open the SotA transaction log screen.");
+	echo("  Attendance    Open the raid attendance list.");
 	echo("  Master    Request SotA master status.");
 	echo("  <item>    Start an auction for <item>.");
 	echo("  Version    Display the SotA client version.");
@@ -1338,6 +1346,7 @@ end
 function SOTA_InitializeUI()
 	SOTA_AuctionUIInit();
 	SOTA_RaidQueueUIInit()
+	SOTA_RaidAttendanceUIInit()
 	SOTA_TransactionLogUIInit();
 end
 

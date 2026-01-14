@@ -198,6 +198,22 @@
 					</TileSize>
 				</Backdrop>
 			</Frame>
+			<!-- Attendance button -->
+			<Button name="$parentAttendanceButton" inherits="UIPanelButtonTemplate" text="Attendance">
+				<Size>
+					<AbsDimension x="100" y="22" />
+				</Size>
+				<Anchors>
+					<Anchor point="TOPLEFT">
+						<Offset x="16" y="-30" />
+					</Anchor>
+				</Anchors>
+				<Scripts>
+					<OnClick>
+						SOTA_OpenRaidAttendanceUI();
+					</OnClick>
+				</Scripts>
+			</Button>
 			<!-- Top right corner close button -->
 			<Button name="$parentTopCloseButton" inherits="UIPanelCloseButton">
 				<Anchors>
@@ -209,6 +225,115 @@
 				<Scripts>
 					<OnClick>
 						SOTA_CloseRaidQueueUI();
+					</OnClick>
+				</Scripts>
+			</Button>
+		</Frames>
+	</Frame>
+
+	<!--	Raid Attendance Frame	-->
+	<Frame name="RaidAttendanceFrame" inherits="SOTABigFrame">
+		<Layers>
+			<Layer>
+				<FontString name="$parentTitle" inherits="GameFontNormal" text="SotA Raid Attendance">
+					<Anchors>
+						<Anchor point="CENTER">
+							<Offset>
+								<AbsDimension x="-6" y="175"/>
+							</Offset>
+						</Anchor>
+					</Anchors>
+				</FontString>
+			</Layer>
+		</Layers>
+
+		<Frames>
+			<!-- Attendance header -->
+			<Frame name="$parentHeader">
+				<Size>
+					<AbsDimension x="298" y="16"/>
+				</Size>
+				<Anchors>
+					<Anchor point="TOPLEFT">
+						<Offset>
+							<AbsDimension x="16" y="-40" />
+						</Offset>
+					</Anchor>
+				</Anchors>
+				<Layers>
+					<Layer>
+						<FontString name="$parentName" justifyH="LEFT" inherits="GameFontNormal" text="Player">
+							<Size>
+								<AbsDimension x="70" y="16"/>
+							</Size>
+							<Anchors>
+								<Anchor point="LEFT">
+									<Offset>
+										<AbsDimension x="4" y="0"/>
+									</Offset>
+								</Anchor>
+							</Anchors>
+						</FontString>
+						<FontString name="$parentZone" justifyH="LEFT" inherits="GameFontNormal" text="Joined">
+							<Size>
+								<AbsDimension x="154" y="16"/>
+							</Size>
+							<Anchors>
+								<Anchor point="LEFT" relativePoint="RIGHT" relativeTo="$parentName"/>
+							</Anchors>
+						</FontString>
+						<FontString name="$parentRank" justifyH="RIGHT" inherits="GameFontNormal" text="Order">
+							<Size>
+								<AbsDimension x="74" y="16"/>
+							</Size>
+							<Anchors>
+								<Anchor point="LEFT" relativePoint="RIGHT" relativeTo="$parentZone"/>
+							</Anchors>
+						</FontString>
+					</Layer>
+				</Layers>
+			</Frame>
+
+			<!-- Attendance list frame -->
+			<ScrollFrame name="$parentList" inherits="FauxScrollFrameTemplate">
+				<Size>
+					<AbsDimension x="620" y="280"/>
+				</Size>
+				<Anchors>
+					<Anchor point="TOPLEFT">
+						<Offset>
+							<AbsDimension x="16" y="-60"/>
+						</Offset>
+					</Anchor>
+				</Anchors>
+				<Backdrop edgeFile="Interface\Tooltips\UI-Tooltip-Border" tile="true">
+					<EdgeSize>
+						<AbsValue val="16"/>
+					</EdgeSize>
+					<TileSize>
+						<AbsValue val="16"/>
+					</TileSize>
+				</Backdrop>
+				<Scripts>
+					<OnVerticalScroll>
+						FauxScrollFrame_OnVerticalScroll(16, SOTA_RefreshRaidAttendance);
+					</OnVerticalScroll>
+					<OnShow>
+						SOTA_RefreshRaidAttendance();
+					</OnShow>
+				</Scripts>
+			</ScrollFrame>
+
+			<!-- Top right corner close button -->
+			<Button name="$parentTopCloseButton" inherits="UIPanelCloseButton">
+				<Anchors>
+					<Anchor point="TOPLEFT">
+						<Offset x="620" y="-9" />
+					</Anchor>
+				</Anchors>
+				<Scripts>
+					<OnClick>
+						SOTA_CloseRaidAttendanceUI();
 					</OnClick>
 				</Scripts>
 			</Button>

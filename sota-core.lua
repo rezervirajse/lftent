@@ -46,6 +46,12 @@ local RaidRosterLazyUpdate		= false;
 -- Table of Queued raid members:			{ Name, QueueID, Role, Class, Guild rank, Offline time }
 SOTA_RaidQueue					= { }
 
+-- Raid attendance tracking for the current raid session.
+SOTA_RaidSessionActive			= false;
+SOTA_RaidSessionStartTick		= 0;
+SOTA_RaidAttendanceList			= { };
+SOTA_RaidAttendanceIndex		= { };
+
 
 SOTA_CHANNELS = {
 	{ 'Raid Warning (/rw)',			WARN_CHANNEL },
@@ -505,8 +511,64 @@ function SOTA_GetGuildPlayerInfo(player)
 	return nil;
 end
 
+local function SOTA_GetAttendanceTick()
+	if SOTA_TimerTick then
+		return SOTA_TimerTick;
+	end
+	return GetTime();
+end
+
+local function SOTA_ResetRaidAttendance()
+	SOTA_RaidAttendanceList = { };
+	SOTA_RaidAttendanceIndex = { };
+	SOTA_RaidSessionStartTick = SOTA_GetAttendanceTick();
+end
+
+function SOTA_UpdateRaidAttendance()
+	local inRaid = (GetNumRaidMembers() > 0);
+
+	if not SOTA_RaidSessionActive and inRaid then
+		SOTA_RaidSessionActive = true;
+		SOTA_ResetRaidAttendance();
+	elseif SOTA_RaidSessionActive and not inRaid then
+		SOTA_RaidSessionActive = false;
+		SOTA_RaidAttendanceList = { };
+		SOTA_RaidAttendanceIndex = { };
+		SOTA_RaidSessionStartTick = 0;
+		if SOTA_RaidAttendanceUIOpen and SOTA_RefreshRaidAttendance then
+			SOTA_RefreshRaidAttendance();
+		end
+		return;
+	end
+
+	if inRaid then
+		local nowTick = SOTA_GetAttendanceTick();
+		for n=1, GetNumRaidMembers(), 1 do
+			local name, _, _, _, class = GetRaidRosterInfo(n);
+			if name and not SOTA_RaidAttendanceIndex[name] then
+				local entryIndex = table.getn(SOTA_RaidAttendanceList) + 1;
+				SOTA_RaidAttendanceList[entryIndex] = { name, class, nowTick, entryIndex };
+				SOTA_RaidAttendanceIndex[name] = entryIndex;
+			end
+		end
+	end
+
+	if SOTA_RaidAttendanceUIOpen and SOTA_RefreshRaidAttendance then
+		SOTA_RefreshRaidAttendance();
+	end
+end
+
+function SOTA_GetRaidAttendanceList()
+	return SOTA_RaidAttendanceList;
+end
+
+function SOTA_GetRaidAttendanceStartTick()
+	return SOTA_RaidSessionStartTick;
+end
+
 
 function SOTA_OnRaidRosterUpdate(event, arg1, arg2, arg3, arg4, arg5)
+	SOTA_UpdateRaidAttendance();
 	RaidRosterLazyUpdate = true;
 
 	SOTA_RefreshRaidQueue();
