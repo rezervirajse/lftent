@@ -154,7 +154,7 @@ local function SOTA_ParseTierAndPlayer(arg)
 		return nil, nil;
 	end
 
-	local first, rest = string.match(arg, "^(%S+)%s+(.+)$");
+	local _, _, first, rest = string.find(arg, "^(%S+)%s+(.+)$");
 	if not first then
 		return nil, nil;
 	end
@@ -164,7 +164,7 @@ local function SOTA_ParseTierAndPlayer(arg)
 		return tier, SOTA_Trim(rest);
 	end
 
-	local head, last = string.match(arg, "^(.*)%s+(%S+)$");
+	local _, _, head, last = string.find(arg, "^(.*)%s+(%S+)$");
 	if not head then
 		return nil, nil;
 	end
@@ -186,7 +186,7 @@ local function SOTA_ParseTierAndValue(arg)
 		return nil, nil;
 	end
 
-	local first, second = string.match(arg, "^(%S+)%s+(%S+)$");
+	local _, _, first, second = string.find(arg, "^(%S+)%s+(%S+)$");
 	if not first then
 		return nil, nil;
 	end
@@ -676,8 +676,8 @@ end
 --
 --	Job Control
 --
-function SOTA_AddJob(method, ...)
-	JobQueue[table.getn(JobQueue) + 1] = { method, ... }
+function SOTA_AddJob(method, arg1, arg2, arg3, arg4, arg5)
+	JobQueue[table.getn(JobQueue) + 1] = { method, arg1, arg2, arg3, arg4, arg5 }
 end
 
 function SOTA_GetNextJob()

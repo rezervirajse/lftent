@@ -1219,7 +1219,7 @@ function SOTA_Decaytest(percent, silentmode, tier)
 			note = "";
 		end
 
-		local hasTier = string.find(note, "%[%-?%d+:%-?%d+%]") or string.find(note, "<-?%d+>");
+		local hasTier = string.find(note, "%[%-?%d+:%-?%d+%]") or string.find(note, "<%-?%d+>");
 		local t1, t2 = SOTA_ParseDkpTiers(note);
 		local dkp = t1;
 		if tier == 2 then
@@ -1309,7 +1309,7 @@ function SOTA_DecayDKP(percent, silentmode, tier)
 			note = "";
 		end
 
-		local hasTier = string.find(note, "%[%-?%d+:%-?%d+%]") or string.find(note, "<-?%d+>");
+		local hasTier = string.find(note, "%[%-?%d+:%-?%d+%]") or string.find(note, "<%-?%d+>");
 		local t1, t2 = SOTA_ParseDkpTiers(note);
 		local dkp = t1;
 		if tier == 2 then
@@ -1573,7 +1573,7 @@ function SOTA_ParseTierPoints(note)
 		return 0, 0;
 	end
 
-	local _, _, t1, t2 = string.find(note, "%[(-?%d+):(-?%d+)%]");
+local _, _, t1, t2 = string.find(note, "%[(%-?%d+):(%-?%d+)%]");
 	if not t1 or not t2 then
 		return 0, 0;
 	end
@@ -1586,12 +1586,12 @@ function SOTA_ParseDkpTiers(note)
 		return 0, 0;
 	end
 
-	local _, _, t1, t2 = string.find(note, "%[(-?%d+):(-?%d+)%]");
+local _, _, t1, t2 = string.find(note, "%[(%-?%d+):(%-?%d+)%]");
 	if t1 and t2 then
 		return (1 * t1), (1 * t2);
 	end
 
-	local _, _, dkp = string.find(note, "<(-?%d+)>");
+local _, _, dkp = string.find(note, "<(%-?%d+)>");
 	if dkp and tonumber(dkp) then
 		return (1 * dkp), 0;
 	end
