@@ -49,6 +49,7 @@ end
 
 function SOTA_OpenRaidAttendanceUI()
 	SOTA_RaidAttendanceUIOpen = true;
+	SOTA_EnsureRaidAttendanceUI();
 	if SOTA_UpdateRaidAttendance then
 		SOTA_UpdateRaidAttendance();
 	end
@@ -116,6 +117,12 @@ function SOTA_RaidAttendanceUIInit()
 	end
 end;
 
+function SOTA_EnsureRaidAttendanceUI()
+	if not getglobal("RaidAttendanceFrameListEntry1") then
+		SOTA_RaidAttendanceUIInit();
+	end
+end
+
 local function SOTA_FormatAttendanceTime(seconds)
 	if not seconds or seconds < 0 then
 		seconds = 0;
@@ -129,6 +136,7 @@ function SOTA_RefreshRaidAttendance()
 	if not SOTA_RaidAttendanceUIOpen then
 		return;
 	end
+	SOTA_EnsureRaidAttendanceUI();
 
 	local attendance = SOTA_GetRaidAttendanceList() or { };
 	FauxScrollFrame_Update(RaidAttendanceFrameList, table.getn(attendance), MAX_RAID_ATTENDANCE_ROWS, 16);
