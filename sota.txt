@@ -200,3 +200,7 @@ Purpose:
 Ends a raid session. This removes context menus etc.
 May finalize zero sum dkp later.
 
+
+
+
+Ето простo обяснение на български къде започва +5 weapon skill quest в Turtle WoW:
