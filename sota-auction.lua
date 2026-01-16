@@ -260,6 +260,12 @@ end
 --	Since 0.0.1
 --]]
 function SOTA_HandlePlayerBid(sender, message)
+
+	if not (AuctionState == STATE_AUCTION_RUNNING) then
+		SOTA_AuctionWhisper(sender, "There is currently no auction running - bid was ignored.");
+		return;
+	end	
+
 	local playerInfo = SOTA_GetGuildPlayerInfo(sender);
 	if not playerInfo then
 		SOTA_AuctionWhisper(sender, "You need to be in the guild to do bidding!");
@@ -300,6 +306,7 @@ function SOTA_HandlePlayerBid(sender, message)
 		end
 	end
 
+
 	local minimumBid = SOTA_GetMinimumBid(bidtype);
 	if not minimumBid then
 		SOTA_AuctionWhisper(sender, "You cannot OS bid if an MS bid is already made.");
@@ -320,13 +327,16 @@ function SOTA_HandlePlayerBid(sender, message)
 		end
 	end	
 
-	if not (AuctionState == STATE_AUCTION_RUNNING) then
-		SOTA_AuctionWhisper(sender, "There is currently no auction running - bid was ignored.");
-		return;
-	end	
-
 	dkp = 1 * dkp
-	
+
+	if dkp > availableDkp then
+		if raidTierLabel then
+			SOTA_AuctionWhisper(sender, string.format("You do not have enough %s DKP for this bid. You have %d %s DKP.", raidTierLabel, availableDkp, raidTierLabel));
+		else
+			SOTA_AuctionWhisper(sender, string.format("You do not have enough DKP for this bid. You have %d DKP.", availableDkp));
+		end
+		return;
+	end
 
 	local bidderClass = playerInfo[3];		-- Info for the player placing the bid.
 	local bidderRank  = playerInfo[4];		-- This rank is by NAME
