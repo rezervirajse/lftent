@@ -404,6 +404,10 @@ function SOTA_HandlePlayerBid(sender, message)
 		return;
 	end
 
+	if availableDkp == 0 then
+		SOTA_AuctionWhisper(sender, string.format("You can bid 0."));
+	end
+
 	local bidderClass = playerInfo[3];		-- Info for the player placing the bid.
 	local bidderRank  = playerInfo[4];		-- This rank is by NAME
 	local bidderRIdx  = playerInfo[7];		-- This rank is by NUMBER!
