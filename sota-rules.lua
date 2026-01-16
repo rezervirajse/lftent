@@ -34,8 +34,125 @@ SOTA_RULES = {
 	},
 }
 
+-- CSV tier import helpers (expects columns: player, note, tier_1_points, tier_2_points, ...).
+local function SOTA_TrimCSVValue(value)
+	if not value then
+		return "";
+	end
+
+	value = string.gsub(value, "^%s*(.-)%s*$", "%1");
+	if string.sub(value, 1, 3) == "\239\187\191" then
+		value = string.sub(value, 4);
+	end
+
+	return value;
+end
+
+local function SOTA_ParseCSVRows(csvText)
+	local rows = {};
+	if not csvText or csvText == "" then
+		return rows;
+	end
+
+	local row = {};
+	local field = "";
+	local inQuotes = false;
+	local i = 1;
+	local len = string.len(csvText);
+
+	while i <= len do
+		local c = string.sub(csvText, i, i);
+		if inQuotes then
+			if c == "\"" then
+				local nextChar = string.sub(csvText, i + 1, i + 1);
+				if nextChar == "\"" then
+					field = field .. "\"";
+					i = i + 1;
+				else
+					inQuotes = false;
+				end
+			else
+				field = field .. c;
+			end
+		else
+			if c == "\"" then
+				inQuotes = true;
+			elseif c == "," then
+				table.insert(row, field);
+				field = "";
+			elseif c == "\n" then
+				table.insert(row, field);
+				field = "";
+				table.insert(rows, row);
+				row = {};
+			elseif c == "\r" then
+				local nextChar = string.sub(csvText, i + 1, i + 1);
+				if nextChar ~= "\n" then
+					table.insert(row, field);
+					field = "";
+					table.insert(rows, row);
+					row = {};
+				end
+			else
+				field = field .. c;
+			end
+		end
+		i = i + 1;
+	end
+
+	table.insert(row, field);
+	if table.getn(row) > 1 or field ~= "" then
+		table.insert(rows, row);
+	end
+
+	return rows;
+end
+
+function SOTA_ParseTierImportCSV(csvText)
+	local rows = {};
+	local parsed = SOTA_ParseCSVRows(csvText);
+	for n=1, table.getn(parsed), 1 do
+		local cols = parsed[n];
+		local player = SOTA_TrimCSVValue(cols[1]);
+		if player ~= "" and string.lower(player) ~= "player" then
+			local t1 = tonumber(SOTA_TrimCSVValue(cols[3])) or 0;
+			local t2 = tonumber(SOTA_TrimCSVValue(cols[4])) or 0;
+			table.insert(rows, { player, t1, t2 });
+		end
+	end
+
+	return rows;
+end
+
+function SOTA_SetTierImportFromCSV(csvText)
+	if not csvText or csvText == "" then
+		csvText = sota_tier_import_csv;
+	end
+	if not csvText or csvText == "" then
+		localEcho("Tier CSV import failed: no CSV text provided.");
+		return false;
+	end
+
+	local rows = SOTA_ParseTierImportCSV(csvText);
+	if table.getn(rows) == 0 then
+		localEcho("Tier CSV import failed: no valid rows found.");
+		return false;
+	end
+
+	sota_tier_import = rows;
+	localEcho(string.format("Tier CSV import parsed %d rows.", table.getn(rows)));
+	return true;
+end
+
 -- Player tier import: populate sota_tier_import with { "Name", t1, t2 } rows.
 -- Then run: /script SOTA_ApplyTierImport()
+-- Optional: set sota_tier_import_csv to CSV text and run /script SOTA_SetTierImportFromCSV()
+if not sota_tier_import and sota_tier_import_csv and sota_tier_import_csv ~= "" then
+	local parsed = SOTA_ParseTierImportCSV(sota_tier_import_csv);
+	if table.getn(parsed) > 0 then
+		sota_tier_import = parsed;
+	end
+end
 if not sota_tier_import then
 	sota_tier_import = {
   {"Allmightt",22,0},
