@@ -253,6 +253,13 @@ function SOTA_HandleSOTACommand(msg)
 		return;	
 	end
 
+	--	Command: tiercsv
+	--	Syntax: "tiercsv"
+	if cmd == "tiercsv" or cmd == "tierimport" or cmd == "importcsv" then
+		SOTA_OpenTierImportUI();
+		return;
+	end
+
 
 	--	Command: master
 	--	Syntax: "master"	
@@ -565,6 +572,7 @@ function SOTA_DisplayHelp()
 	--	Misc:
 	localEcho("Miscellaneous:");
 	echo("  Config    Open the SotA configuration screen.");
+	echo("  TierCSV    Open the tier CSV import window.");
 	echo("  Log    Open the SotA transaction log screen.");
 	echo("  Attendance    Open the raid attendance list.");
 	echo("  Master    Request SotA master status.");

@@ -675,6 +675,23 @@
 					</FontString>
 				</Layer>
 			</Layers>
+			<Frames>
+				<Button name="$parentTierImportButton" inherits="UIPanelButtonTemplate" text="Tier CSV Import">
+					<Size>
+						<AbsDimension x="140" y="22"/>
+					</Size>
+					<Anchors>
+						<Anchor point="TOPLEFT" relativeTo="$parentGainTableText" relativePoint="BOTTOMLEFT">
+							<Offset x="0" y="-18"/>
+						</Anchor>
+					</Anchors>
+					<Scripts>
+						<OnClick>
+							SOTA_OpenTierImportUI();
+						</OnClick>
+					</Scripts>
+				</Button>
+			</Frames>
 		</Frame>
 
 		<!-- Configuration Frame 2.1: Messages -->
@@ -1500,6 +1517,151 @@
 				<Texture setAllPoints="true">
 					<Color r="0.0" g="0.0" b="0.0" a="0.9"/>
 				</Texture>
+			</Layer>
+		</Layers>
+		<Scripts>
+			<OnLoad>
+				this:SetMovable(true)
+				this:SetUserPlaced(true)
+				this:RegisterForDrag("LeftButton")
+			</OnLoad>
+			<OnDragStart>
+				this:StartMoving()
+			</OnDragStart>
+			<OnDragStop>
+				this:StopMovingOrSizing()
+			</OnDragStop>
+		</Scripts>
+	</Frame>
+	
+	<!-- Tier CSV import frame -->
+	<Frame name="SOTA_TierImportFrame" parent="UIParent" toplevel="true" hidden="true">
+		<Size>
+			<AbsDimension x="620" y="420" />
+		</Size>
+		<Anchors>
+			<Anchor point="CENTER" />
+		</Anchors>
+		<Backdrop edgeFile="Interface\DialogFrame\UI-DialogBox-Border" tile="true" bgFile="Interface\DialogFrame\UI-DialogBox-Background">
+			<BackgroundInsets>
+				<AbsInset left="11" right="12" top="12" bottom="11" />
+			</BackgroundInsets>
+			<TileSize>
+				<AbsValue val="32" />
+			</TileSize>
+			<EdgeSize>
+				<AbsValue val="32" />
+			</EdgeSize>
+		</Backdrop>
+		<Frames>
+			<Button name="$parentCloseX" inherits="UIPanelCloseButton">
+				<Anchors>
+					<Anchor point="TOPRIGHT">
+						<Offset x="-6" y="-6" />
+					</Anchor>
+				</Anchors>
+				<Scripts>
+					<OnClick>
+						SOTA_CloseTierImportUI();
+					</OnClick>
+				</Scripts>
+			</Button>
+			<ScrollFrame name="$parentScrollFrame" inherits="UIPanelScrollFrameTemplate">
+				<Size>
+					<AbsDimension x="560" y="260"/>
+				</Size>
+				<Anchors>
+					<Anchor point="TOPLEFT" relativeTo="$parentHelp" relativePoint="BOTTOMLEFT">
+						<Offset x="0" y="-12"/>
+					</Anchor>
+				</Anchors>
+				<Backdrop edgeFile="Interface\Tooltips\UI-Tooltip-Border" tile="true" bgFile="Interface\Tooltips\UI-Tooltip-Background">
+					<BackgroundInsets>
+						<AbsInset left="4" right="4" top="4" bottom="4" />
+					</BackgroundInsets>
+					<EdgeSize>
+						<AbsValue val="16"/>
+					</EdgeSize>
+					<TileSize>
+						<AbsValue val="16"/>
+					</TileSize>
+				</Backdrop>
+				<ScrollChild>
+					<EditBox name="$parentEditBox" multiLine="true" autoFocus="false" letters="100000">
+						<Size>
+							<AbsDimension x="520" y="260"/>
+						</Size>
+						<Anchors>
+							<Anchor point="TOPLEFT" />
+						</Anchors>
+						<FontString inherits="ChatFontNormal"/>
+						<Scripts>
+							<OnEscapePressed>
+								SOTA_CloseTierImportUI();
+							</OnEscapePressed>
+							<OnTextChanged>
+								ScrollingEdit_OnTextChanged(this, this:GetParent());
+							</OnTextChanged>
+							<OnCursorChanged>
+								ScrollingEdit_OnCursorChanged(this, arg1, arg2, arg3, arg4);
+							</OnCursorChanged>
+							<OnUpdate>
+								ScrollingEdit_OnUpdate(this, elapsed, this:GetParent());
+							</OnUpdate>
+						</Scripts>
+					</EditBox>
+				</ScrollChild>
+			</ScrollFrame>
+			<Button name="$parentImportButton" inherits="UIPanelButtonTemplate" text="Import">
+				<Size>
+					<AbsDimension x="120" y="24" />
+				</Size>
+				<Anchors>
+					<Anchor point="BOTTOMRIGHT">
+						<Offset x="-34" y="24" />
+					</Anchor>
+				</Anchors>
+				<Scripts>
+					<OnClick>
+						SOTA_ImportTierCSVFromUI();
+					</OnClick>
+				</Scripts>
+			</Button>
+			<Button name="$parentCloseButton" inherits="UIPanelButtonTemplate" text="Close">
+				<Size>
+					<AbsDimension x="120" y="24" />
+				</Size>
+				<Anchors>
+					<Anchor point="RIGHT" relativeTo="$parentImportButton" relativePoint="LEFT">
+						<Offset x="-12" y="0" />
+					</Anchor>
+				</Anchors>
+				<Scripts>
+					<OnClick>
+						SOTA_CloseTierImportUI();
+					</OnClick>
+				</Scripts>
+			</Button>
+		</Frames>
+		<Layers>
+			<Layer level="ARTWORK">
+				<FontString name="$parentTitle" inherits="GameFontNormalLarge" text="Tier CSV Import">
+					<Anchors>
+						<Anchor point="TOPLEFT">
+							<Offset x="24" y="-20"/>
+						</Anchor>
+					</Anchors>
+				</FontString>
+				<FontString name="$parentHelp" inherits="GameFontHighlightSmall" justifyH="LEFT" text="Paste CSV with columns: player, tier_1_points, tier_2_points">
+					<Size>
+						<AbsDimension x="560" y="32"/>
+					</Size>
+					<Anchors>
+						<Anchor point="TOPLEFT" relativeTo="$parentTitle" relativePoint="BOTTOMLEFT">
+							<Offset x="0" y="-6"/>
+						</Anchor>
+					</Anchors>
+				</FontString>
 			</Layer>
 		</Layers>
 		<Scripts>

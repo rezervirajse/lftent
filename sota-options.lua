@@ -199,6 +199,47 @@ function SOTA_OpenMessageConfig()
 	FrameConfigMessage:Show();
 end
 
+function SOTA_OpenTierImportUI()
+	if not SOTA_TierImportFrame then
+		localEcho("Tier CSV import UI is not available.");
+		return false;
+	end
+
+	SOTA_TierImportFrame:Show();
+	local editBox = getglobal("SOTA_TierImportFrameScrollFrameEditBox");
+	if editBox then
+		if sota_tier_import_csv and sota_tier_import_csv ~= "" then
+			editBox:SetText(sota_tier_import_csv);
+			editBox:HighlightText();
+		else
+			editBox:SetText("");
+		end
+		editBox:SetFocus();
+	end
+	return true;
+end
+
+function SOTA_CloseTierImportUI()
+	if SOTA_TierImportFrame then
+		SOTA_TierImportFrame:Hide();
+	end
+end
+
+function SOTA_ImportTierCSVFromUI()
+	local editBox = getglobal("SOTA_TierImportFrameScrollFrameEditBox");
+	if not editBox then
+		localEcho("Tier CSV import failed: input box not found.");
+		return false;
+	end
+
+	local csvText = editBox:GetText();
+	sota_tier_import_csv = csvText;
+	if SOTA_SetTierImportFromCSV(csvText) then
+		return SOTA_ApplyTierImport();
+	end
+	return false;
+end
+
 function SOTA_RefreshRulesConfig()
 	local tiers = {};
 	local gainTable = {};
