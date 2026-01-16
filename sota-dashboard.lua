@@ -1428,20 +1428,31 @@ function SOTA_OnChatWhisper(event, message, sender)
 		return
 	end
 	
-	local _, _, cmd = string.find(message, "(%a+)");	
+	local trimmed = SOTA_Trim(message);
+	if trimmed == "" then
+		return;
+	end
+
+	local _, _, rawBid = string.find(trimmed, "^(%d+)$");
+	if rawBid then
+		SOTA_HandlePlayerBid(sender, "bid "..rawBid);
+		return;
+	end
+
+	local _, _, cmd = string.find(trimmed, "(%a+)");	
 	if not cmd then
 		return
 	end
 	cmd = string.lower(cmd);
 	
 	if cmd == "bid" or cmd == "os" or cmd == "ms" then
-		SOTA_HandlePlayerBid(sender, message);
+		SOTA_HandlePlayerBid(sender, trimmed);
 
 	elseif cmd == "pass" then
 		SOTA_HandlePlayerPass(sender);
 		
 	elseif cmd == "queue" then
-		SOTA_HandleQueueRequest(sender, message);
+		SOTA_HandleQueueRequest(sender, trimmed);
 
 	elseif cmd == "listqueue" then
 		SOTA_Call_ListQueue(sender);
