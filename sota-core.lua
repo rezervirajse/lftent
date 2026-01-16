@@ -840,7 +840,7 @@ function SOTA_Call_SubtractPlayerDKP(playername, dkp, tier)
 		SOTA_RequestUpdateGuildRoster();
 	end
 end
-function SOTA_SubtractPlayerDKP(playername, dkpValue, tier, silentmode)
+function SOTA_SubtractPlayerDKP(playername, dkpValue, tier, silentmode, logLabel)
 	if type(tier) == "boolean" and silentmode == nil then
 		silentmode = tier;
 		tier = nil;
@@ -852,7 +852,11 @@ function SOTA_SubtractPlayerDKP(playername, dkpValue, tier, silentmode)
 --			publicEcho(string.format("%d DKP was subtracted from %s", abs(dkpValue), playername));
 			SOTA_EchoEvent(SOTA_MSG_OnDKPSubtract, "", abs(dkpValue), playername);
 		end
-		SOTA_LogSingleTransaction("-Player", playername, dkpValue);
+		local transactionLabel = "-Player";
+		if logLabel and logLabel ~= "" then
+			transactionLabel = logLabel;
+		end
+		SOTA_LogSingleTransaction(transactionLabel, playername, dkpValue);
 	end
 end
 
@@ -1772,7 +1776,8 @@ function SOTA_ToggleIncludePlayerInTransaction(playername)
 
 	local validTypes = { "-Player", "+Player", "%Player" }
 	for n=1, table.getn(validTypes), 1 do
-		if validTypes[n] == trType then
+		local prefix = validTypes[n];
+		if string.sub(trType, 1, string.len(prefix)) == prefix then
 			singlePlayerTransaction = true;
 			break;
 		end

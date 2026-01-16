@@ -449,7 +449,11 @@ function SOTA_AcceptBid(playername, bid)
 		--publicEcho(SOTA_getConfigurableMessage(SOTA_MSG_OnComplete, AuctionedItemLink, bid, playername));
 		SOTA_EchoEvent(SOTA_MSG_OnComplete, AuctionedItemLink, bid, playername);
 		
-		SOTA_SubtractPlayerDKP(playername, bid);		
+		local logLabel = "-Player Auction";
+		if AuctionedItemLink and AuctionedItemLink ~= "" then
+			logLabel = logLabel .. ": " .. AuctionedItemLink;
+		end
+		SOTA_SubtractPlayerDKP(playername, bid, nil, nil, logLabel);
 	end
 end
 

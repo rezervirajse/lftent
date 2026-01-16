@@ -306,9 +306,7 @@ function SOTA_OnOptionBossDKPChanged(object)
 end
 
 function SOTA_InitializeConfigSettings()
-    if not SOTA_CONFIG_UseGuildNotes then
-		SOTA_CONFIG_UseGuildNotes = 0;
-    end
+	SOTA_CONFIG_UseGuildNotes = 1;
     if not SOTA_CONFIG_MinimumBidStrategy then
 		SOTA_CONFIG_MinimumBidStrategy = 0;
     end
