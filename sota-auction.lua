@@ -359,6 +359,7 @@ end
 
 
 function SOTA_RegisterBid(playername, bid, bidtype, playerclass, rankname, rankindex, raidTier, raidTierLabel)
+	playername = SOTA_UCFirst(playername);
 	if not raidTier then
 		local playerInfo = SOTA_GetGuildPlayerInfo(playername);
 		raidTier, raidTierLabel = SOTA_GetBidTier(playerInfo);
@@ -381,15 +382,28 @@ function SOTA_RegisterBid(playername, bid, bidtype, playerclass, rankname, ranki
 		bidLabel = "Your Off-spec bid";
 	end
 
-	if raidTierLabel then
-		SOTA_AuctionWhisper(playername, string.format("%s of %d %s DKP has been registered. You have %d %s DKP.", bidLabel, bid, raidTierLabel, playerDkp, raidTierLabel));
-	else
-		SOTA_AuctionWhisper(playername, string.format("%s of %d DKP has been registered. You have %d DKP.", bidLabel, bid, playerDkp));
+	IncomingBidsTable = SOTA_RenumberTable(IncomingBidsTable);
+
+	local hadBid = false;
+	for n=table.getn(IncomingBidsTable), 1, -1 do
+		if IncomingBidsTable[n][1] == playername then
+			table.remove(IncomingBidsTable, n);
+			hadBid = true;
+		end
 	end
 
-	IncomingBidsTable = SOTA_RenumberTable(IncomingBidsTable);
-	
 	IncomingBidsTable[table.getn(IncomingBidsTable) + 1] = { playername, bid, bidtype, playerclass, rankname, rankindex };
+
+	local actionLabel = "registered";
+	if hadBid then
+		actionLabel = "updated";
+	end
+
+	if raidTierLabel then
+		SOTA_AuctionWhisper(playername, string.format("%s of %d %s DKP has been %s. You have %d %s DKP.", bidLabel, bid, raidTierLabel, actionLabel, playerDkp, raidTierLabel));
+	else
+		SOTA_AuctionWhisper(playername, string.format("%s of %d DKP has been %s. You have %d DKP.", bidLabel, bid, actionLabel, playerDkp));
+	end
 
 	-- Sort by DKP, then BidType (so MS bids are before OS bids)
 	SOTA_SortTableDescending(IncomingBidsTable, 2);
@@ -415,6 +429,12 @@ function SOTA_RegisterBid(playername, bid, bidtype, playerclass, rankname, ranki
 	--]]
  
 	SOTA_UpdateBidElements();
+	if hadBid then
+		local selectedBid = SOTA_GetSelectedBid();
+		if selectedBid and selectedBid[1] == playername then
+			SOTA_ShowSelectedPlayer(playername, bid);
+		end
+	end
 end
 
 
