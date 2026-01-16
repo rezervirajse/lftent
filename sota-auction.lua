@@ -376,11 +376,18 @@ function SOTA_HandlePlayerBid(sender, message)
 	
 	--echo(string.format("Min.Bid=%d for bidtype=%s", minimumBid, bidtype));
 	
-	local dkp = tonumber(arg)	
+	local dkp = tonumber(arg)
 	if not dkp then
-		if arg == "min" then
+		local _, _, argDigits = string.find(arg, "(%d+)");
+		if argDigits then
+			dkp = tonumber(argDigits);
+		end
+	end
+	if not dkp then
+		local argAlpha = string.gsub(arg, "[^%a]", "");
+		if argAlpha == "min" then
 			dkp = minimumBid;
-		elseif arg == "max" then
+		elseif argAlpha == "max" then
 			dkp = availableDkp;
 		else
 			-- This was not following a legal format; skip message

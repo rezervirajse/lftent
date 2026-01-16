@@ -1439,6 +1439,14 @@ function SOTA_OnChatWhisper(event, message, sender)
 		return;
 	end
 
+	if not string.find(trimmed, "%a") then
+		local _, _, looseBid = string.find(trimmed, "(%d+)");
+		if looseBid then
+			SOTA_HandlePlayerBid(sender, "bid "..looseBid);
+			return;
+		end
+	end
+
 	local _, _, cmd = string.find(trimmed, "(%a+)");	
 	if not cmd then
 		return
