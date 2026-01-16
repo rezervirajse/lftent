@@ -385,14 +385,23 @@ function SOTA_RegisterBid(playername, bid, bidtype, playerclass, rankname, ranki
 	IncomingBidsTable = SOTA_RenumberTable(IncomingBidsTable);
 
 	local hadBid = false;
+	local nameKey = string.lower(playername);
 	for n=table.getn(IncomingBidsTable), 1, -1 do
-		if IncomingBidsTable[n][1] == playername then
-			table.remove(IncomingBidsTable, n);
-			hadBid = true;
+		local entry = IncomingBidsTable[n];
+		local entryName = entry and entry[1];
+		if entryName and string.lower(entryName) == nameKey then
+			if not hadBid then
+				IncomingBidsTable[n] = { playername, bid, bidtype, playerclass, rankname, rankindex };
+				hadBid = true;
+			else
+				table.remove(IncomingBidsTable, n);
+			end
 		end
 	end
 
-	IncomingBidsTable[table.getn(IncomingBidsTable) + 1] = { playername, bid, bidtype, playerclass, rankname, rankindex };
+	if not hadBid then
+		IncomingBidsTable[table.getn(IncomingBidsTable) + 1] = { playername, bid, bidtype, playerclass, rankname, rankindex };
+	end
 
 	local actionLabel = "registered";
 	if hadBid then
