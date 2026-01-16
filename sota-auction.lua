@@ -261,11 +261,6 @@ end
 --]]
 function SOTA_HandlePlayerBid(sender, message)
 
-	if not (AuctionState == STATE_AUCTION_RUNNING) then
-		SOTA_AuctionWhisper(sender, "There is currently no auction running - bid was ignored.");
-		return;
-	end	
-
 	local playerInfo = SOTA_GetGuildPlayerInfo(sender);
 	if not playerInfo then
 		SOTA_AuctionWhisper(sender, "You need to be in the guild to do bidding!");
@@ -277,6 +272,15 @@ function SOTA_HandlePlayerBid(sender, message)
 		-- The sender of the message was not in the raid; must be a normal whisper.
 		return;
 	end
+
+	if AuctionState == STATE_NONE then
+		return;
+	end
+
+	if not (AuctionState == STATE_AUCTION_RUNNING) then
+		SOTA_AuctionWhisper(sender, "There is currently no auction running - bid was ignored.");
+		return;
+	end	
 
 	local raidTier, raidTierLabel = SOTA_GetBidTier(playerInfo);
 	local availableDkp = 0;
