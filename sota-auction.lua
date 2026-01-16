@@ -307,7 +307,24 @@ function SOTA_HandlePlayerBid(sender, message)
 	end
 
 
-	local minimumBid = SOTA_GetMinimumBid(bidtype);
+	local hasExistingBid = false;
+	local senderKey = string.lower(sender);
+	for n=1, table.getn(IncomingBidsTable), 1 do
+		local entry = IncomingBidsTable[n];
+		local entryName = entry and entry[1];
+		if entryName and string.lower(entryName) == senderKey then
+			hasExistingBid = true;
+			break;
+		end
+	end
+
+	local minimumBid = nil;
+	if bidtype == 2 and hasExistingBid then
+		-- Allow switching between MS/OS for existing bidders even if MS bids exist.
+		minimumBid = SOTA_GetMinimumBid();
+	else
+		minimumBid = SOTA_GetMinimumBid(bidtype);
+	end
 	if not minimumBid then
 		SOTA_AuctionWhisper(sender, "You cannot OS bid if an MS bid is already made.");
 		return;
