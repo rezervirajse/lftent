@@ -329,6 +329,11 @@ function SOTA_HandlePlayerBid(sender, message)
 
 	dkp = 1 * dkp
 
+	if dkp < 0 then
+		SOTA_AuctionWhisper(sender, "You cannot bid a negative amount.");
+		return;
+	end
+
 	if dkp > availableDkp then
 		if raidTierLabel then
 			SOTA_AuctionWhisper(sender, string.format("You do not have enough %s DKP for this bid. You have %d %s DKP.", raidTierLabel, availableDkp, raidTierLabel));
