@@ -547,50 +547,18 @@ function SOTA_AcceptBid(playername, bid)
 	if playername and bid then
 		playername = SOTA_UCFirst(playername);
 		bid = 1 * bid;
-
-		-- Winner pays 1 more than the next highest bid (if any), but never above own bid.
-		local finalBid = bid;
-		local winnerInfo = SOTA_GetBidInfo(playername, bid);
-		local winnerType = nil;
-		if winnerInfo then
-			winnerType = winnerInfo[3];
-		end
-
-		local competitorBid = nil;
-		local winnerKey = string.lower(playername);
-		for n=1, table.getn(IncomingBidsTable), 1 do
-			local entry = IncomingBidsTable[n];
-			local entryName = entry and entry[1];
-			if entryName and string.lower(entryName) ~= winnerKey then
-				if (not winnerType) or entry[3] == winnerType then
-					local entryBid = 1 * (entry[2] or 0);
-					if entryBid < bid then
-						if (not competitorBid) or entryBid > competitorBid then
-							competitorBid = entryBid;
-						end
-					end
-				end
-			end
-		end
-
-		if competitorBid then
-			finalBid = competitorBid + 1;
-			if finalBid > bid then
-				finalBid = bid;
-			end
-		end
 	
 		AuctionUIFrame:Hide();
 		
 		--publicEcho(string.format("%s sold to %s for %d DKP.", AuctionedItemLink, playername, bid));
-		--publicEcho(SOTA_getConfigurableMessage(SOTA_MSG_OnComplete, AuctionedItemLink, finalBid, playername));
-		SOTA_EchoEvent(SOTA_MSG_OnComplete, AuctionedItemLink, finalBid, playername);
+		--publicEcho(SOTA_getConfigurableMessage(SOTA_MSG_OnComplete, AuctionedItemLink, bid, playername));
+		SOTA_EchoEvent(SOTA_MSG_OnComplete, AuctionedItemLink, bid, playername);
 		
 		local logLabel = "-Player Auction";
 		if AuctionedItemLink and AuctionedItemLink ~= "" then
 			logLabel = logLabel .. ": " .. AuctionedItemLink;
 		end
-		SOTA_SubtractPlayerDKP(playername, finalBid, nil, nil, logLabel);
+		SOTA_SubtractPlayerDKP(playername, bid, nil, nil, logLabel);
 	end
 end
 
