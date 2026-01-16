@@ -25,10 +25,10 @@ local RAID_DKP_ROW_HEIGHT		= 16;
 
 
 function SOTA_OpenRaidQueueUI()
-	RaidQueueUIOpen = true;	
-	SOTA_RefreshRaidQueue();
+	-- RaidQueueUIOpen = true;	
+	SOTA_OpenRaidAttendanceUI();
 	
-	RaidQueueFrame:Show();
+	-- RaidQueueFrame:Show();
 end
 
 function SOTA_CloseRaidQueueUI()
