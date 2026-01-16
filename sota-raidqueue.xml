@@ -352,7 +352,7 @@
 			</Frame>
 
 			<!-- Attendance list frame -->
-			<ScrollFrame name="$parentList" inherits="FauxScrollFrameTemplate">
+			<Frame name="$parentList">
 				<Size>
 					<AbsDimension x="620" y="280"/>
 				</Size>
@@ -372,14 +372,11 @@
 					</TileSize>
 				</Backdrop>
 				<Scripts>
-					<OnVerticalScroll>
-						FauxScrollFrame_OnVerticalScroll(16, SOTA_RefreshRaidAttendance);
-					</OnVerticalScroll>
 					<OnShow>
 						SOTA_RefreshRaidAttendance();
 					</OnShow>
 				</Scripts>
-			</ScrollFrame>
+			</Frame>
 
 			<!-- Top right corner close button -->
 			<Button name="$parentTopCloseButton" inherits="UIPanelCloseButton">

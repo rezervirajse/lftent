@@ -150,7 +150,7 @@ local SOTA_CONFIG_DEFAULT_BossDKP = {
 }
 -- Pane 3:
 SOTA_CONFIG_Modified			= false;	-- If TRUE, then config number has been updated; FALSE: not.
-SOTA_CONFIG_UseGuildNotes		= 0;
+SOTA_CONFIG_UseGuildNotes		= 1;
 SOTA_CONFIG_MinimumBidStrategy	= 1;	-- 0: No strategy, 1: +10 DKP, 2: +10 %, 3: GGC rules, 4: DejaVu rules, 5: Custom rules
 SOTA_CONFIG_DKPStringLength		= 5;
 SOTA_CONFIG_MinimumDKPPenalty	= 50;	-- Minimum DKP withdrawn when doing percent DKP

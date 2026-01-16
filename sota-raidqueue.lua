@@ -139,10 +139,14 @@ function SOTA_RefreshRaidAttendance()
 	SOTA_EnsureRaidAttendanceUI();
 
 	local attendance = SOTA_GetRaidAttendanceList() or { };
-	FauxScrollFrame_Update(RaidAttendanceFrameList, table.getn(attendance), MAX_RAID_ATTENDANCE_ROWS, 16);
-	local offset = FauxScrollFrame_GetOffset(RaidAttendanceFrameList);
+	local total = table.getn(attendance);
+	local offset = 0;
 
 	local startTick = SOTA_GetRaidAttendanceStartTick() or 0;
+	local headerRank = getglobal("RaidAttendanceFrameHeaderRank");
+	if headerRank then
+		headerRank:SetText(string.format("Order (%d)", total));
+	end
 	for n=1, MAX_RAID_ATTENDANCE_ROWS, 1 do
 		local row = attendance[n + offset];
 		local frame = getglobal("RaidAttendanceFrameListEntry"..n);
