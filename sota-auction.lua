@@ -289,10 +289,50 @@ function SOTA_HandlePlayerBid(sender, message)
 	end
 	
 	local cmd, arg
-	local spacepos = string.find(message, "%s");
+	local msg = message;
+	if not msg then
+		return;
+	end
+	msg = string.lower(msg);
+	msg = string.gsub(msg, "^%s+", "");
+	msg = string.gsub(msg, "%s+$", "");
+	if msg == "" then
+		return;
+	end
+	
+	local spacepos = string.find(msg, "%s");
 	if spacepos then
-		_, _, cmd, arg = string.find(string.lower(message), "(%S+)%s+(.+)");
+		_, _, cmd, arg = string.find(msg, "^(%S+)%s+(.+)$");
+		if arg then
+			arg = string.gsub(arg, "^%s+", "");
+			arg = string.gsub(arg, "%s+$", "");
+		end
 	else
+		local _, _, cmdMatch, numMatch = string.find(msg, "^(%a+)(%d+)$");
+		if cmdMatch then
+			cmd = cmdMatch;
+			arg = numMatch;
+		else
+			local _, _, numOnly = string.find(msg, "^(%d+)$");
+			if numOnly then
+				cmd = "bid";
+				arg = numOnly;
+			else
+				local _, _, numMatch2, cmdMatch2 = string.find(msg, "^(%d+)(%a+)$");
+				if cmdMatch2 then
+					cmd = cmdMatch2;
+					arg = numMatch2;
+				else
+					return;
+				end
+			end
+		end
+	end
+	
+	if not cmd or not arg then
+		return;
+	end
+	if cmd ~= "bid" and cmd ~= "ms" and cmd ~= "os" then
 		return;
 	end	
 
