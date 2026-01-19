@@ -66,6 +66,28 @@ local function SOTA_GetBidTier(playerInfo)
 	return tier, tierLabel;
 end
 
+local function SOTA_GetBestCompetingBid(bidtype, excludePlayer)
+	local bestBid = nil;
+	local excludeKey = excludePlayer and string.lower(excludePlayer) or nil;
+
+	for n=1, table.getn(IncomingBidsTable), 1 do
+		local entry = IncomingBidsTable[n];
+		if entry then
+			local entryName = entry[1];
+			if entryName and (not excludeKey or string.lower(entryName) ~= excludeKey) then
+				if (not bidtype) or entry[3] == bidtype then
+					local entryBid = 1 * entry[2];
+					if (not bestBid) or entryBid > bestBid then
+						bestBid = entryBid;
+					end
+				end
+			end
+		end
+	end
+
+	return bestBid;
+end
+
 
 function SOTA_GetSecondCounter()
 	return Seconds;
@@ -577,20 +599,31 @@ function SOTA_AcceptBid(playername, bid)
 	
 		AuctionUIFrame:Hide();
 		
-		--publicEcho(string.format("%s sold to %s for %d DKP.", AuctionedItemLink, playername, bid));
-		--publicEcho(SOTA_getConfigurableMessage(SOTA_MSG_OnComplete, AuctionedItemLink, bid, playername));
-		SOTA_EchoEvent(SOTA_MSG_OnComplete, AuctionedItemLink, bid, playername);
-		
 		local bidInfo = SOTA_GetBidInfo(playername, bid);
 		local bidtype = bidInfo and bidInfo[3];
 		local logLabel = "-Player Auction";
+		local finalBid = bid;
+		if bidtype ~= BIDTYPE_TRANSMOG then
+			local competingBid = SOTA_GetBestCompetingBid(bidtype, playername);
+			if competingBid and competingBid < bid then
+				local adjustedBid = competingBid + 1;
+				if adjustedBid < finalBid then
+					finalBid = adjustedBid;
+				end
+			end
+		end
+		
+		--publicEcho(string.format("%s sold to %s for %d DKP.", AuctionedItemLink, playername, finalBid));
+		--publicEcho(SOTA_getConfigurableMessage(SOTA_MSG_OnComplete, AuctionedItemLink, finalBid, playername));
+		SOTA_EchoEvent(SOTA_MSG_OnComplete, AuctionedItemLink, finalBid, playername);
+
 		if bidtype == BIDTYPE_TRANSMOG then
 			logLabel = "-Player Transmog";
 		end
 		if AuctionedItemLink and AuctionedItemLink ~= "" then
 			logLabel = logLabel .. ": " .. AuctionedItemLink;
 		end
-		SOTA_SubtractPlayerDKP(playername, bid, nil, nil, logLabel);
+		SOTA_SubtractPlayerDKP(playername, finalBid, nil, nil, logLabel);
 	end
 end
 
