@@ -174,7 +174,7 @@
 			<!-- Selected Bid frame -->
 			<Frame name="$parentSelected">
 				<Size>
-					<AbsDimension x="400" y="30" />
+					<AbsDimension x="400" y="44" />
 				</Size>
 				<Anchors>
 					<Anchor point="TOPLEFT">
@@ -232,6 +232,19 @@
 							</Size>
 							<Anchors>
 								<Anchor point="LEFT" relativePoint="RIGHT" relativeTo="$parentType" />
+							</Anchors>
+						</FontString>
+						<!-- Actual DKP charge -->
+						<FontString name="$parentActual" justifyH="LEFT" inherits="GameFontNormal" text="">
+							<Size>
+								<AbsDimension x="380" y="16" />
+							</Size>
+							<Anchors>
+								<Anchor point="BOTTOMLEFT">
+									<Offset>
+										<AbsDimension x="8" y="4" />
+									</Offset>
+								</Anchor>
 							</Anchors>
 						</FontString>
 					</Layer>

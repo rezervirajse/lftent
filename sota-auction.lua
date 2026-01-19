@@ -88,6 +88,23 @@ local function SOTA_GetBestCompetingBid(bidtype, excludePlayer)
 	return bestBid;
 end
 
+local function SOTA_GetFinalBid(playername, bid, bidtype)
+	local finalBid = 1 * (bid or 0);
+	if bidtype == BIDTYPE_TRANSMOG then
+		return 0;
+	end
+
+	local competingBid = SOTA_GetBestCompetingBid(bidtype, playername);
+	if competingBid and competingBid < finalBid then
+		local adjustedBid = competingBid + 1;
+		if adjustedBid < finalBid then
+			finalBid = adjustedBid;
+		end
+	end
+
+	return finalBid;
+end
+
 
 function SOTA_GetSecondCounter()
 	return Seconds;
@@ -603,16 +620,7 @@ function SOTA_AcceptBid(playername, bid)
 		local bidInfo = SOTA_GetBidInfo(playername, bid);
 		local bidtype = bidInfo and bidInfo[3];
 		local logLabel = "-Player Auction";
-		local finalBid = bid;
-		if bidtype ~= BIDTYPE_TRANSMOG then
-			local competingBid = SOTA_GetBestCompetingBid(bidtype, playername);
-			if competingBid and competingBid < bid then
-				local adjustedBid = competingBid + 1;
-				if adjustedBid < finalBid then
-					finalBid = adjustedBid;
-				end
-			end
-		end
+		local finalBid = SOTA_GetFinalBid(playername, bid, bidtype);
 		
 		--publicEcho(string.format("%s sold to %s for %d DKP.", AuctionedItemLink, playername, finalBid));
 		--publicEcho(SOTA_getConfigurableMessage(SOTA_MSG_OnComplete, AuctionedItemLink, finalBid, playername));
@@ -950,6 +958,7 @@ function SOTA_ShowSelectedPlayer(playername, bid)
 	end
 	
 	local bidder, bid, bidtype, bidtypeText, playerclass, rank;
+	local actualText = "";
 	if not bidInfo then
 		bidder = "";
 		bid = "";
@@ -971,6 +980,8 @@ function SOTA_ShowSelectedPlayer(playername, bid)
 		end
 		playerclass = bidInfo[4];
 		rank = bidInfo[5];
+		local finalBid = SOTA_GetFinalBid(bidder, bidInfo[2], bidtype);
+		actualText = string.format("Will subtract: %d DKP", finalBid);
 	end
 	
 	local color = SOTA_GetClassColorCodes(playerclass);
@@ -981,6 +992,7 @@ function SOTA_ShowSelectedPlayer(playername, bid)
 	getglobal(frame:GetName().."Bid"):SetText(bid);
 	getglobal(frame:GetName().."Type"):SetText(bidtypeText);
 	getglobal(frame:GetName().."Rank"):SetText(rank);
+	getglobal(frame:GetName().."Actual"):SetText(actualText);
 
 	SOTA_RefreshButtonStates();
 end
@@ -991,6 +1003,7 @@ function SOTA_ClearSelectedPlayer()
 	getglobal(frame:GetName().."Bid"):SetText("");
 	getglobal(frame:GetName().."Type"):SetText("");
 	getglobal(frame:GetName().."Rank"):SetText("");
+	getglobal(frame:GetName().."Actual"):SetText("");
 end
 
 
