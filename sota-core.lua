@@ -841,10 +841,7 @@ function SOTA_Call_SubtractPlayerDKP(playername, dkp, tier)
 	end
 end
 function SOTA_SubtractPlayerDKP(playername, dkpValue, tier, silentmode, logLabel)
-	if type(tier) == "boolean" and silentmode == nil then
-		silentmode = tier;
-		tier = nil;
-	end
+
 	dkpValue = -1 * dkpValue;
 	if SOTA_ApplyPlayerDKP(playername, dkpValue, silentmode, tier) then
 		playername = SOTA_UCFirst(playername);

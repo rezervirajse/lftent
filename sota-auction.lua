@@ -596,6 +596,7 @@ function SOTA_AcceptBid(playername, bid)
 	if playername and bid then
 		playername = SOTA_UCFirst(playername);
 		bid = 1 * bid;
+
 	
 		AuctionUIFrame:Hide();
 		
@@ -623,6 +624,9 @@ function SOTA_AcceptBid(playername, bid)
 		if AuctionedItemLink and AuctionedItemLink ~= "" then
 			logLabel = logLabel .. ": " .. AuctionedItemLink;
 		end
+		
+		local playerInfo = SOTA_GetGuildPlayerInfo(playername);
+		local tier = SOTA_GetBidTier(playerInfo);
 		SOTA_SubtractPlayerDKP(playername, finalBid, nil, nil, logLabel);
 	end
 end
