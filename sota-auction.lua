@@ -21,7 +21,8 @@ local RAID_STATE_ENABLED		= 1
 
 -- Max # of bids shown in the AuctionUI
 local MAX_BIDS					= 10
--- List of valid bids: { Name, DKP, BidType(MS=1,OS=2), Class, RankName, RankIndex }
+local BIDTYPE_TRANSMOG			= 3
+-- List of valid bids: { Name, DKP, BidType(MS=1,OS=2,TMOG=3), Class, RankName, RankIndex }
 local IncomingBidsTable			= { };
 
 -- Working variables:
@@ -256,7 +257,7 @@ end
 
 --[[
 --	Handle incoming bid request.
---	Syntax: /sota bid|ms|os <dkp>|min|max
+--	Syntax: /sota bid|ms|os <dkp>|min|max|tmog
 --	Since 0.0.1
 --]]
 function SOTA_HandlePlayerBid(sender, message)
@@ -304,33 +305,43 @@ function SOTA_HandlePlayerBid(sender, message)
 		return;
 	end
 	
-	local spacepos = string.find(msg, "%s");
-	if spacepos then
-		_, _, cmd, arg = string.find(msg, "^(%S+)%s+(.+)$");
-		if arg then
-			arg = string.gsub(arg, "^%s+", "");
-			arg = string.gsub(arg, "%s+$", "");
-		end
+	if msg == "tmog" or msg == "transmog" then
+		cmd = "bid";
+		arg = msg;
 	else
-		local _, _, cmdMatch, numMatch = string.find(msg, "^(%a+)(%d+)$");
-		if cmdMatch then
-			cmd = cmdMatch;
-			arg = numMatch;
+		local spacepos = string.find(msg, "%s");
+		if spacepos then
+			_, _, cmd, arg = string.find(msg, "^(%S+)%s+(.+)$");
+			if arg then
+				arg = string.gsub(arg, "^%s+", "");
+				arg = string.gsub(arg, "%s+$", "");
+			end
 		else
-			local _, _, numOnly = string.find(msg, "^(%d+)$");
-			if numOnly then
-				cmd = "bid";
-				arg = numOnly;
+			local _, _, cmdMatch, numMatch = string.find(msg, "^(%a+)(%d+)$");
+			if cmdMatch then
+				cmd = cmdMatch;
+				arg = numMatch;
 			else
-				local _, _, numMatch2, cmdMatch2 = string.find(msg, "^(%d+)(%a+)$");
-				if cmdMatch2 then
-					cmd = cmdMatch2;
-					arg = numMatch2;
+				local _, _, numOnly = string.find(msg, "^(%d+)$");
+				if numOnly then
+					cmd = "bid";
+					arg = numOnly;
 				else
-					return;
+					local _, _, numMatch2, cmdMatch2 = string.find(msg, "^(%d+)(%a+)$");
+					if cmdMatch2 then
+						cmd = cmdMatch2;
+						arg = numMatch2;
+					else
+						return;
+					end
 				end
 			end
 		end
+	end
+
+	if cmd == "tmog" or cmd == "transmog" then
+		cmd = "bid";
+		arg = "tmog";
 	end
 	
 	if not cmd or not arg then
@@ -389,6 +400,9 @@ function SOTA_HandlePlayerBid(sender, message)
 			dkp = minimumBid;
 		elseif argAlpha == "max" then
 			dkp = availableDkp;
+		elseif argAlpha == "tmog" or argAlpha == "transmog" then
+			dkp = 0;
+			bidtype = BIDTYPE_TRANSMOG;
 		else
 			-- This was not following a legal format; skip message
 			return;
@@ -452,6 +466,8 @@ function SOTA_RegisterBid(playername, bid, bidtype, playerclass, rankname, ranki
 	local bidLabel = "Your bid";
 	if bidtype == 2 then
 		bidLabel = "Your Off-spec bid";
+	elseif bidtype == BIDTYPE_TRANSMOG then
+		bidLabel = "Your Transmog bid";
 	end
 
 	IncomingBidsTable = SOTA_RenumberTable(IncomingBidsTable);
@@ -565,7 +581,12 @@ function SOTA_AcceptBid(playername, bid)
 		--publicEcho(SOTA_getConfigurableMessage(SOTA_MSG_OnComplete, AuctionedItemLink, bid, playername));
 		SOTA_EchoEvent(SOTA_MSG_OnComplete, AuctionedItemLink, bid, playername);
 		
+		local bidInfo = SOTA_GetBidInfo(playername, bid);
+		local bidtype = bidInfo and bidInfo[3];
 		local logLabel = "-Player Auction";
+		if bidtype == BIDTYPE_TRANSMOG then
+			logLabel = "-Player Transmog";
+		end
 		if AuctionedItemLink and AuctionedItemLink ~= "" then
 			logLabel = logLabel .. ": " .. AuctionedItemLink;
 		end
@@ -668,6 +689,8 @@ function SOTA_UpdateBidElements()
 				bidtypeText = "OS";
 			elseif bidtype == 1 then
 				bidtypeText = "MS";
+			elseif bidtype == BIDTYPE_TRANSMOG then
+				bidtypeText = "TMOG";
 			else
 				bidtypeText = "";
 			end
@@ -904,6 +927,8 @@ function SOTA_ShowSelectedPlayer(playername, bid)
 			bidtypeText = "OS";
 		elseif bidtype == 1 then
 			bidtypeText = "MS";
+		elseif bidtype == BIDTYPE_TRANSMOG then
+			bidtypeText = "TMOG";
 		else
 			bidtypeText = "";
 		end

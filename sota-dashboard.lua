@@ -360,7 +360,7 @@ function SOTA_HandleSOTACommand(msg)
 	
 	--	Command: bid, os, ms
 	--	Syntax: "bid <%d>", "bid min", "bid max"
-	if cmd == "bid" or cmd == "ms" or cmd == "os" then
+	if cmd == "bid" or cmd == "ms" or cmd == "os" or cmd == "tmog" or cmd == "transmog" then
 		return SOTA_HandlePlayerBid(playername, msg);
 	end
 
@@ -1461,7 +1461,7 @@ function SOTA_OnChatWhisper(event, message, sender)
 	end
 	cmd = string.lower(cmd);
 	
-	if cmd == "bid" or cmd == "os" or cmd == "ms" then
+	if cmd == "bid" or cmd == "os" or cmd == "ms" or cmd == "tmog" or cmd == "transmog" then
 		SOTA_HandlePlayerBid(sender, trimmed);
 
 	elseif cmd == "pass" then
