@@ -131,6 +131,55 @@ local function SOTA_Trim(value)
 	return value;
 end
 
+local function SOTA_StripItemLinks(value)
+	if not value then
+		return "";
+	end
+	local msg = value;
+	msg = string.gsub(msg, "|c%x%x%x%x%x%x%x%x", "");
+	msg = string.gsub(msg, "|r", "");
+	msg = string.gsub(msg, "|H[^|]+|h%[[^%]]+%]|h", " ");
+	msg = string.gsub(msg, "|H[^|]+|h", " ");
+	msg = string.gsub(msg, "|h", " ");
+	return msg;
+end
+
+local function SOTA_ParseBidMessage(message)
+	if not message then
+		return nil;
+	end
+
+	local msg = SOTA_Trim(message);
+	if msg == "" then
+		return nil;
+	end
+
+	msg = string.lower(msg);
+	msg = SOTA_StripItemLinks(msg);
+	msg = SOTA_Trim(msg);
+	if msg == "" then
+		return nil;
+	end
+	msg = string.gsub(msg, "%s+", " ");
+
+	local _, _, amount, cmd = string.find(msg, "(%d+)%s*(ms|os|bid)%s*$");
+	if amount and cmd then
+		return cmd.." "..amount;
+	end
+
+	local _, _, cmd2, amount2 = string.find(msg, "(ms|os|bid)%s*(%d+)%s*$");
+	if cmd2 and amount2 then
+		return cmd2.." "..amount2;
+	end
+
+	local _, _, tmogCmd = string.find(msg, "(tmog|transmog)%s*$");
+	if tmogCmd then
+		return tmogCmd;
+	end
+
+	return nil;
+end
+
 local function SOTA_NormalizeTierToken(token)
 	if not token then
 		return nil;
@@ -1453,6 +1502,12 @@ function SOTA_OnChatWhisper(event, message, sender)
 			SOTA_HandlePlayerBid(sender, "bid "..looseBid);
 			return;
 		end
+	end
+
+	local normalizedBid = SOTA_ParseBidMessage(trimmed);
+	if normalizedBid then
+		SOTA_HandlePlayerBid(sender, normalizedBid);
+		return;
 	end
 
 	local _, _, cmd = string.find(trimmed, "(%a+)");	
